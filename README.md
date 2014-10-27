@@ -13,29 +13,27 @@ The schedule is passed to the application on startup.
 		{
 			"uuid": "ed9f4064-4f2a-4d1a-8583-c05f19af0b58",
 			"description": "Turn on lounge lights at night",
+			"window": {
+				"from": "...",  // dusk or dawn, local-time-of-day, local-timestamp
+				"to": "..."	    // dawn or dawn, local-time-of-day, local-timestamp
+			},
 			"open": {
-			      "at": "22:00", // or a fuzzier time specification, resolved by what?
-			      "action": [
-				      {
-				      	"action-type": "call",
-				      	"channel": "$device/{device-id}/channel/{channel-id}",
-				      	"method": "turnOn",
-				      	"params": {}
-				      }
-			      ]
-
+				  "action": [
+					  {
+						"type": "thing-action",
+						"thing-id": "ed9f4064",
+						"action": "on"
+					  }
+				  ]
 			},
 			"close": {
-			      "at": "06:00",
-			      "action": [
-				      {
-				      	"action-type": "call",
-				      	"channel": "$device/{device-id}/channel/{channel-id}",
-				      	"method": "turnOff",
-				      	"params": {}
-				      }
-			      ]
-
+				  "action": [
+					  {
+						"type": "thing-action",
+						"thing-id": "ed9f4064",
+						"action": "off"
+					  }
+				  ]
 			},
 		}
 		]
