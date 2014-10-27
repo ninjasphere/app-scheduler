@@ -1,0 +1,7 @@
+*~
+main
+.gopath/*
+pkg/
+.AppleDouble
+bin/driver-go-zigbee
+bin/
