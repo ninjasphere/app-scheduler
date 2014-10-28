@@ -8,71 +8,68 @@ import (
 
 type window struct {
 	model *model.Window
-	from  event
-	until event
+	from  Event
+	until Event
 }
 
 func (w *window) init(m *model.Window) error {
+	var err error
 	w.model = m
-	err := w.from.init(m.From)
+	w.from, err = newEvent(m.From)
 	if err != nil {
-		err = w.until.init(m.Until)
+		w.until, err = newEvent(m.Until)
 	}
 	return err
 }
 
 // Answer true if the window is open with respect to the specified time.
 func (w *window) isOpen(ref time.Time) bool {
-	openTimestamp := w.openTimestamp(ref)
-	closeTimestamp := w.closeTimestamp(openTimestamp)
+	openWaitsForTime := w.from.hasTimestamp()
+	closeWaitsForTime := w.until.hasTimestamp()
 
-	return openTimestamp.Sub(ref) < 0 &&
-		ref.Sub(closeTimestamp) < 0 &&
-		openTimestamp.Sub(closeTimestamp) > 0
-}
+	if openWaitsForTime && closeWaitsForTime {
 
-// Answer timestamp of the current (or next) open event, given the current timestamp
-func (w *window) openTimestamp(ref time.Time) time.Time {
-	return w.from.asTimestamp(ref)
-}
+		// when both events are timestamp based, check
+		// that the reference timestamp is within the boundaries
+		// of those timestamp
 
-// Answer the timestamp of the next close event, given an open event with the specified timestamp.
-func (w *window) closeTimestamp(ref time.Time) time.Time {
-	openTimestamp := w.openTimestamp(ref)
-	closeTimestamp := w.until.asTimestamp(openTimestamp)
-	if closeTimestamp.Sub(openTimestamp) < 0 {
-		if w.from.clockTime && w.until.clockTime {
-			// when open and close times are specified with clock times, then
-			// we must cope with open times that start before midnight and end after midnight
-			closeTimestamp = closeTimestamp.AddDate(0, 0, 1)
-		} else {
-			log.Fatalf("confusing window specification - what should I do here? (from,until) == (%s, %s)", w.model.From, w.model.Until)
-		}
+		openTimestamp := w.from.asTimestamp(ref)
+		closeTimestamp := w.until.asTimestamp(openTimestamp)
+
+		return openTimestamp.Sub(ref) < 0 &&
+			ref.Sub(closeTimestamp) < 0 &&
+			openTimestamp.Sub(closeTimestamp) > 0
+	} else if !openWaitsForTime && !closeWaitsForTime {
+
+		// when neither events are timestamp based, we have to
+		// wait to wait for the open event to know we are open
+
+		return false
+	} else if closeWaitsForTime {
+
+		// when only the close event is timestamp based we
+		// the reference time is in the window, only if
+		// it is less than the close event
+
+		closeTimestamp := w.until.asTimestamp(ref)
+		return ref.Sub(closeTimestamp) < 0
+	} else { // if openWaitsForTime
+
+		// when only the open event is timestamp basedd
+		// we are in the window, only if reference
+		// timestamp is greater than the open timestamp
+
+		openTimestamp := w.until.asTimestamp(ref)
+		return ref.Sub(openTimestamp) >= 0
 	}
-	return closeTimestamp
-}
-
-// Answer a channel that will signal when the specified deadline time has been reached.
-func getWaiter(deadline time.Time) chan time.Time {
-	now := time.Now()
-	delay := deadline.Sub(now)
-	waiter := make(chan time.Time, 1)
-	if delay > 0 {
-		time.AfterFunc(delay, func() {
-			waiter <- time.Now()
-		})
-	} else {
-		waiter <- now
-	}
-	return waiter
 }
 
 // Answer a channel that will receive an event when the next open event occurs.
 func (w *window) whenOpen(ref time.Time) chan time.Time {
-	return getWaiter(w.openTimestamp(ref))
+	return w.from.waiter(ref)
 }
 
 // Answer a channel that will receive an event when the next close event after the specified open event occurs.
 func (w *window) whenClosed(opened time.Time) chan time.Time {
-	return getWaiter(w.closeTimestamp(opened))
+	return w.until.waiter(opened)
 }

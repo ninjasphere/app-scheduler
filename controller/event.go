@@ -8,89 +8,164 @@ import (
 	"github.com/ninjasphere/app-scheduler/model"
 )
 
-type event struct {
-	// given a reference time, yields a timestamp relative to the reference time
-	asTimestamp func(reference time.Time) time.Time
+type Event interface {
+	// Time based events have timestamps, other types of events do not
+	hasTimestamp() bool
+	// Answers the timestamp of time-based event. Panics otherwise.
+	asTimestamp(ref time.Time) time.Time
+	// Answer a channel for the event which receives a timestamp when the event occurs
+	waiter(ref time.Time) chan time.Time
+}
+
+type timeEvent struct {
 	// the timestamp parsed from the time specification
 	parsed *time.Time
-	// whether the parsed event is a clock time (true) or an absolute (local) timestamp
-	clockTime bool
+	// the timestamp for an event that occurs near this time.
+	asTimestamp func(ref time.Time) time.Time
+}
+
+// An event that occurs at a specified timestamp
+type timestamp struct {
+	timeEvent
+}
+
+// An event that occurs after a delay from the reference timestamp.
+type delay struct {
+	timeEvent
+}
+
+// An event that occurs, every day, at a specified time of day
+type timeOfDay struct {
+	timeEvent
+}
+
+// Sunset each day.
+type sunset struct {
+	timeOfDay
+}
+
+// Sunrise each day.
+type sunrise struct {
+	timeOfDay
 }
 
 // Initialize the event from the specification.
-func (t *event) init(m *model.Event) error {
+func newEvent(m *model.Event) (Event, error) {
 	var err error
 
 	switch m.Rule {
 	case "timestamp":
 		parsed, err := time.Parse("20060102T150405", m.Param)
 		if err == nil {
-			t.asTimestamp = t.timestamp
-			t.parsed = &parsed
+			result := &timestamp{
+				timeEvent: timeEvent{
+					parsed: &parsed,
+				},
+			}
+			result.timeEvent.asTimestamp = result.asTimestamp
+			return result, nil
 		}
-		fallthrough
 	case "time-of-day":
 		parsed, err := time.Parse("15:04:05", m.Param)
 		if err == nil {
-			t.asTimestamp = t.timeofday
-			t.parsed = &parsed
-			t.clockTime = true
+			result := &timeOfDay{
+				timeEvent: timeEvent{
+					parsed: &parsed,
+				},
+			}
+			result.timeEvent.asTimestamp = result.asTimestamp
+			return result, nil
 		}
-		fallthrough
 	case "delay":
 		parsed, err := time.Parse("15:04:05", m.Param)
 		if err == nil {
-			t.asTimestamp = t.timeofday
-			t.parsed = &parsed
+			result := &delay{
+				timeEvent: timeEvent{
+					parsed: &parsed,
+				},
+			}
+			result.timeEvent.asTimestamp = result.asTimestamp
+			return result, nil
 		}
-		fallthrough
-	case "dusk":
+	case "sunset":
 		parsed, err := time.Parse("15:04:05", "18:00:00")
 		if err == nil {
-			t.asTimestamp = t.dusk
-			t.parsed = &parsed
-			t.clockTime = true
+			result := &sunset{
+				timeOfDay: timeOfDay{
+					timeEvent: timeEvent{
+						parsed: &parsed,
+					},
+				},
+			}
+			result.timeEvent.asTimestamp = result.asTimestamp
+			return result, nil
 		}
-		fallthrough
-	case "dawn":
+	case "sunrise":
 		parsed, err := time.Parse("15:04:05", "06:00:00")
 		if err == nil {
-			t.asTimestamp = t.dawn
-			t.parsed = &parsed
-			t.clockTime = true
+			result := &sunrise{
+				timeOfDay: timeOfDay{
+					timeEvent: timeEvent{
+						parsed: &parsed,
+					},
+				},
+			}
+			result.timeEvent.asTimestamp = result.asTimestamp
+			return result, nil
 		}
-		fallthrough
 	default:
 		json, _ := json.Marshal(m)
-		return fmt.Errorf("bad time specification: '%s'", json)
+		return nil, fmt.Errorf("bad time specification: '%s'", json)
 	}
-	return err
+
+	return nil, err
+}
+
+func (t *timeEvent) hasTimestamp() bool {
+	return true
+}
+
+func (t *timeEvent) waiter(ref time.Time) chan time.Time {
+	now := time.Now()
+	delay := t.asTimestamp(ref).Sub(now)
+	waiter := make(chan time.Time, 1)
+	if delay > 0 {
+		time.AfterFunc(delay, func() {
+			waiter <- time.Now()
+		})
+	} else {
+		waiter <- now
+	}
+	return waiter
 }
 
 // Return the parsed timestamp.
-func (t *event) timestamp(ref time.Time) time.Time {
+func (t *timestamp) asTimestamp(ref time.Time) time.Time {
 	return *t.parsed
 }
 
 // Return the specified time of day, relative to the reference timestamp.
-func (t *event) timeofday(ref time.Time) time.Time {
-	return time.Date(ref.Year(), ref.Month(), ref.Day(), (*t.parsed).Hour(), (*t.parsed).Minute(), (*t.parsed).Second(), 0, nil)
+func (t *timeOfDay) asTimestamp(ref time.Time) time.Time {
+	tmp := time.Date(ref.Year(), ref.Month(), ref.Day(), (*t.parsed).Hour(), (*t.parsed).Minute(), (*t.parsed).Second(), 0, nil)
+	if tmp.Sub(ref) < 0 {
+		tmp = tmp.AddDate(0, 0, 1)
+	}
+	return tmp
 }
 
 // Answer the timestamp after the delay specfied.
-func (t *event) delay(ref time.Time) time.Time {
+func (t *delay) asTimestamp(ref time.Time) time.Time {
 	delay := time.Duration((*t.parsed).Hour())*time.Hour + time.Duration((*t.parsed).Minute())*time.Minute + time.Duration((*t.parsed).Second())*time.Second
 	return ref.Add(delay)
 }
 
-// Answer the time of the next dusk in the current location.
-func (t *event) dusk(ref time.Time) time.Time {
-	//FIXME: use location data, if available, to calculate sunset
-	return t.timeofday(ref)
+// Answer the time of the next sunset in the current location.
+func (t *sunset) asTimestamp(ref time.Time) time.Time {
+	return t.timeOfDay.asTimestamp(ref)
 }
 
-// Answer the time of the next dawn in the current location.
-func (t *event) dawn(ref time.Time) time.Time {
+// Answer the time of the next sunrise in the current location.
+func (t *sunrise) asTimestamp(ref time.Time) time.Time {
 	//FIXME: use location data, if available, to calculate sunrise
-	return t.timeofday(ref)
+	return t.timeOfDay.asTimestamp(ref)
 }
