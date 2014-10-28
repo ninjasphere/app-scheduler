@@ -44,7 +44,7 @@ func (w *window) closeTimestamp(ref time.Time) time.Time {
 		if w.from.clockTime && w.until.clockTime {
 			// when open and close times are specified with clock times, then
 			// we must cope with open times that start before midnight and end after midnight
-			closeTimestamp = closeTimestamp.AddDate(0, 1, 1)
+			closeTimestamp = closeTimestamp.AddDate(0, 0, 1)
 		} else {
 			log.Fatalf("confusing window specification - what should I do here? (from,until) == (%s, %s)", w.model.From, w.model.Until)
 		}
