@@ -16,18 +16,18 @@ func TestJSONRoundTrip(t *testing.T) {
 		Uuid:        "u",
 		Description: "d",
 		Window: &Window{
-			From:  "10:00",
-			Until: "12:00",
+			From:  &Event{Rule: "time-of-day", Param: "10:00"},
+			Until: &Event{Rule: "time-of-day", Param: "12:00"},
 		},
 		Open: []*ThingAction{
-			&ThingAction{
+			{
 				ActionType: "thing-action",
 				ThingId:    "thing-id",
 				Action:     "on",
 			},
 		},
 		Close: []*ThingAction{
-			&ThingAction{
+			{
 				ActionType: "thing-action",
 				ThingId:    "thing-id",
 				Action:     "off",
@@ -37,12 +37,12 @@ func TestJSONRoundTrip(t *testing.T) {
 
 	serialized, err := json.Marshal(item)
 	if err != nil {
-	   t.Fatalf("marhsalling - %s", err)
+		t.Fatalf("marhsalling - %s", err)
 	}
 	deserialized := &Task{}
-	err =json.Unmarshal(serialized, deserialized)
+	err = json.Unmarshal(serialized, deserialized)
 	if err != nil {
-	   t.Fatalf("unmarhsalling - %s", err)
+		t.Fatalf("unmarhsalling - %s", err)
 	}
 
 	assert(t, "uuid", func() bool { return deserialized.Uuid == item.Uuid })
