@@ -15,19 +15,19 @@ func TestJSONRoundTrip(t *testing.T) {
 	item := &Task{
 		Uuid:        "u",
 		Description: "d",
-		Window: WindowSpec{
+		Window: &Window{
 			From:  "10:00",
 			Until: "12:00",
 		},
-		Open: []*ThingActionSpec{
-			&ThingActionSpec{
+		Open: []*ThingAction{
+			&ThingAction{
 				ActionType: "thing-action",
 				ThingId:    "thing-id",
 				Action:     "on",
 			},
 		},
-		Close: []*ThingActionSpec{
-			&ThingActionSpec{
+		Close: []*ThingAction{
+			&ThingAction{
 				ActionType: "thing-action",
 				ThingId:    "thing-id",
 				Action:     "off",
