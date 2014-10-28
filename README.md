@@ -17,24 +17,19 @@ The schedule is passed to the application on startup.
 				"from": "...",  // dusk or dawn, local-time-of-day, local-timestamp
 				"to": "..."	    // dawn or dawn, local-time-of-day, local-timestamp
 			},
-			"open": {
-				  "action": [
-					  {
-						"type": "thing-action",
-						"thing-id": "ed9f4064",
-						"action": "on"
-					  }
-				  ]
-			},
-			"close": {
-				  "action": [
-					  {
-						"type": "thing-action",
-						"thing-id": "ed9f4064",
-						"action": "off"
-					  }
-				  ]
-			},
-		}
+			"open": [
+				{
+					"type": "thing-action",
+					"thing-id": "ed9f4064",
+					"action": "on"
+				}
+			],
+			"close": [
+				{
+					"type": "thing-action",
+					"thing-id": "ed9f4064",
+					"action": "off"
+				}
+			]
 		]
 	}
