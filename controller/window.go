@@ -8,8 +8,8 @@ import (
 
 type window struct {
 	model *model.Window
-	from  timespec
-	until timespec
+	from  event
+	until event
 }
 
 func (w *window) init(m *model.Window) error {
