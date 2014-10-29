@@ -1,72 +1,137 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/go-ninja/logger"
 )
 
 var log *logger.Logger = logger.GetLogger("")
 
+type startRequest struct {
+	model *model.Task
+	reply chan error
+}
+
+type cancelRequest struct {
+	id    string
+	reply chan error
+}
+
 type Scheduler struct {
-	model      *model.Schedule
-	tasks      map[string]*task
-	stopped    chan struct{}
-	reaperQuit chan bool
+	model    *model.Schedule
+	started  map[string]*task
+	stopped  chan struct{}
+	shutdown chan bool
+	tasks    chan startRequest
+	cancels  chan cancelRequest
+}
+
+// The control loop of the scheduler. It is responsible for admitting
+// new tasks, reaping completed tasks, cancelling running tasks.
+func (s *Scheduler) loop() {
+	var quit = false
+
+	reap := make(chan string)
+
+	for !quit || len(s.started) > 0 {
+		select {
+		case quit = <-s.shutdown:
+			for taskId, t := range s.started {
+				log.Debugf("signaled %s", taskId)
+				t.quit <- struct{}{}
+			}
+
+		case taskId := <-reap:
+			log.Debugf("reaped %s", taskId)
+			delete(s.started, taskId)
+
+		case startReq := <-s.tasks:
+			taskId := startReq.model.Uuid
+			runner := &task{}
+			err := runner.init(startReq.model)
+			if err == nil {
+				s.started[taskId] = runner
+				go func() {
+					defer func() {
+						log.Debugf("exiting %s", taskId)
+						reap <- taskId
+					}()
+					runner.loop()
+				}()
+				log.Debugf("started %s", taskId)
+			}
+			startReq.reply <- err
+
+		case cancelReq := <-s.cancels:
+			var err error
+			if runner, ok := s.started[cancelReq.id]; ok {
+				runner.quit <- struct{}{}
+			} else {
+				err = fmt.Errorf("task id (%s) does not exist", cancelReq.id)
+			}
+			cancelReq.reply <- err
+		}
+
+	}
+
+	s.stopped <- struct{}{}
+
 }
 
 func (s *Scheduler) Start(m *model.Schedule) error {
 	s.model = m
-	s.reaperQuit = make(chan bool)
-	s.tasks = make(map[string]*task)
+	s.shutdown = make(chan bool)
+	s.started = make(map[string]*task)
 	s.stopped = make(chan struct{})
-	reaper := make(chan string)
+	s.tasks = make(chan startRequest)
+	s.cancels = make(chan cancelRequest)
+
+	go s.loop()
+
+	errors := make([]error, 0)
+
 	for _, t := range m.Tasks {
-		task := &task{}
-		err := task.init(t)
-		if err == nil {
-			s.tasks[t.Uuid] = task
-			go func() {
-				defer func() {
-					log.Debugf("exiting %s", t.Uuid)
-					reaper <- t.Uuid
-				}()
-				task.loop()
-			}()
-		} else {
-			log.Errorf("failed to initialize task id '%s' because %s", t.Uuid, err)
+		reply := make(chan error)
+		s.tasks <- startRequest{t, reply}
+		err := <-reply
+		if err != nil {
+			errors = append(errors, err)
 		}
 	}
 
-	go func() {
-
-		var quit = false
-
-		for !quit {
-			for len(s.tasks) > 0 {
-				select {
-				case nonce := <-s.reaperQuit:
-					_ = nonce
-					quit = true
-					for taskId, t := range s.tasks {
-						log.Debugf("signaled %s", taskId)
-						t.quit <- struct{}{}
-					}
-				case taskId := <-reaper:
-					log.Debugf("reaped %s", taskId)
-					delete(s.tasks, taskId)
-				}
-			}
-		}
-
-		s.stopped <- struct{}{}
-	}()
-
-	return nil
+	if len(errors) > 1 {
+		return fmt.Errorf("errors %v", errors)
+	} else if len(errors) == 1 {
+		return errors[0]
+	} else {
+		return nil
+	}
 }
 
 func (s *Scheduler) Stop() error {
-	s.reaperQuit <- true
-	close(s.reaperQuit)
+	s.shutdown <- true
+	close(s.shutdown)
 	<-s.stopped
 	return nil
+}
+
+func (s *Scheduler) Schedule(m *model.Task) error {
+	reply := make(chan error)
+	s.tasks <- startRequest{m, reply}
+	err := <-reply
+	return err
+}
+
+func (s *Scheduler) Cancel(taskId string) error {
+	reply := make(chan error)
+	s.cancels <- cancelRequest{taskId, reply}
+	err := <-reply
+	return err
+}
+
+func (s *Scheduler) SetLogger(logger *logger.Logger) {
+	if logger != nil {
+		log = logger
+	}
 }

@@ -23,7 +23,9 @@ func (a *SchedulerApp) Start(model *model.Schedule) error {
 	if a.scheduler != nil {
 		return fmt.Errorf("illegal state: scheduler is already running")
 	}
+	a.model = model
 	a.scheduler = &controller.Scheduler{}
+	a.scheduler.SetLogger(a.Log)
 	err := a.scheduler.Start(model)
 	if err == nil {
 		a.SendEvent("config", model)
@@ -39,6 +41,48 @@ func (a *SchedulerApp) Stop() error {
 		err = tmp.Stop()
 	}
 	return err
+}
+
+func (a *SchedulerApp) Schedule(task *model.Task) (string, error) {
+	if a.scheduler != nil {
+		err := a.Cancel(task.Uuid)
+		if err != nil {
+			a.Log.Warningf("cancel failed %s", err)
+		}
+		err = a.scheduler.Schedule(task)
+		if err == nil {
+			a.model.Tasks = append(a.model.Tasks, task)
+			a.SendEvent("config", a.model)
+		}
+		return task.Uuid, err
+	} else {
+		return "", fmt.Errorf("cannot schedule a task while the scheduler is stopped")
+	}
+}
+
+func (a *SchedulerApp) Cancel(taskId string) error {
+	if a.scheduler != nil {
+		var err error
+		found := -1
+		for i, t := range a.model.Tasks {
+			if t.Uuid == taskId {
+				found = i
+				break
+			}
+		}
+		if found > -1 {
+			err = a.scheduler.Cancel(taskId)
+			if err == nil {
+				a.model.Tasks = append(a.model.Tasks[0:found], a.model.Tasks[found+1:]...)
+				a.SendEvent("config", a.model)
+			}
+		} else {
+			err = nil
+		}
+		return err
+	} else {
+		return fmt.Errorf("cannot cancel a task while the scheduler is stopped")
+	}
 }
 
 func main() {
