@@ -13,15 +13,10 @@ var (
 	info = ninja.LoadModuleInfo("./package.json")
 )
 
-type service struct {
-}
-
 type SchedulerApp struct {
 	support.AppSupport
 	scheduler *controller.Scheduler
-}
-
-type Config struct {
+	model     *model.Schedule
 }
 
 func (a *SchedulerApp) Start(model *model.Schedule) error {
