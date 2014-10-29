@@ -98,3 +98,11 @@ func (w *window) whenOpen(ref time.Time) chan time.Time {
 func (w *window) whenClosed(opened time.Time) chan time.Time {
 	return w.until.waiter(opened)
 }
+
+func (w *window) StringAt(ref time.Time) string {
+	return fmt.Sprintf("window[from: %s, until:%s]", w.from.StringAt(ref), w.until.StringAt(ref))
+}
+
+func (w *window) String() string {
+	return w.StringAt(clock.Now())
+}
