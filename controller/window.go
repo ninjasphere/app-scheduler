@@ -56,9 +56,9 @@ func (w *window) isOpen(ref time.Time) bool {
 		openTimestamp := w.from.asTimestamp(ref)
 		closeTimestamp := w.until.asTimestamp(openTimestamp)
 
-		return openTimestamp.Sub(ref) < 0 &&
+		return openTimestamp.Sub(ref) <= 0 &&
 			ref.Sub(closeTimestamp) < 0 &&
-			openTimestamp.Sub(closeTimestamp) > 0
+			openTimestamp.Sub(closeTimestamp) < 0
 	} else if !openWaitsForTime && !closeWaitsForTime {
 
 		// when neither events are timestamp based, we have to
