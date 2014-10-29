@@ -37,6 +37,7 @@ type delay struct {
 // An event that occurs, every day, at a specified time of day
 type timeOfDay struct {
 	timeEvent
+	closeEvent bool
 }
 
 // Sunset each day.
@@ -50,7 +51,7 @@ type sunrise struct {
 }
 
 // Initialize the event from the specification.
-func newEvent(m *model.Event) (Event, error) {
+func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 	var err error
 
 	switch m.Rule {
@@ -72,6 +73,7 @@ func newEvent(m *model.Event) (Event, error) {
 				timeEvent: timeEvent{
 					parsed: &parsed,
 				},
+				closeEvent: closeEvent,
 			}
 			result.timeEvent.asTimestamp = result.asTimestamp
 			return result, nil
@@ -95,6 +97,7 @@ func newEvent(m *model.Event) (Event, error) {
 					timeEvent: timeEvent{
 						parsed: &parsed,
 					},
+					closeEvent: closeEvent,
 				},
 			}
 			result.timeEvent.asTimestamp = result.asTimestamp
@@ -108,6 +111,7 @@ func newEvent(m *model.Event) (Event, error) {
 					timeEvent: timeEvent{
 						parsed: &parsed,
 					},
+					closeEvent: closeEvent,
 				},
 			}
 			result.timeEvent.asTimestamp = result.asTimestamp
@@ -147,7 +151,7 @@ func (t *timestamp) asTimestamp(ref time.Time) time.Time {
 // Return the specified time of day, relative to the reference timestamp.
 func (t *timeOfDay) asTimestamp(ref time.Time) time.Time {
 	tmp := time.Date(ref.Year(), ref.Month(), ref.Day(), (*t.parsed).Hour(), (*t.parsed).Minute(), (*t.parsed).Second(), 0, clock.Location())
-	if tmp.Sub(ref) < 0 {
+	if tmp.Sub(ref) < 0 && t.closeEvent {
 		tmp = tmp.AddDate(0, 0, 1)
 	}
 	return tmp

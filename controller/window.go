@@ -15,9 +15,9 @@ type window struct {
 func (w *window) init(m *model.Window) error {
 	var err error
 	w.model = m
-	w.from, err = newEvent(m.From)
+	w.from, err = newEvent(m.From, false)
 	if err != nil {
-		w.until, err = newEvent(m.Until)
+		w.until, err = newEvent(m.Until, true)
 	}
 	return err
 }
