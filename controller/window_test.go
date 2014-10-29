@@ -46,7 +46,7 @@ func runNonOverlappingWindow(t *testing.T, m *model.Window, permanentlyClosed bo
 		t.Fatalf("window should not be open now")
 	}
 	if permanentlyClosed != stub.isPermanentlyClosed(testTime) {
-		t.Fatalf("expecting permanentlyClosed == %v, but found opposite", permanentlyClosed)
+		t.Fatalf("expecting permanentlyClosed == %v, but found opposite %v", permanentlyClosed, stub)
 	}
 }
 

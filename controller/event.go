@@ -18,8 +18,8 @@ type Event interface {
 	waiter(ref time.Time) chan time.Time
 	// Answer true if the event is a recurring event but false if the event can only happen once
 	isRecurring() bool
-	// Answer true if asTimestamp(ref),Sub(ref) <= 0
-	hasEventOccurred(ref time.Time) bool
+	// Answer true if the event scheduled at scheduledAt has occurred by ref
+	hasEventOccurred(scheduledAt time.Time, ref time.Time) bool
 	// Answer true if the final event of this type has occurred. Not true for recurring events
 	// or for non-recurring events whose timestamp is less than the reference timestamp.
 	hasFinalEventOccurred(ref time.Time) bool
@@ -146,8 +146,8 @@ func (t *timeEvent) isRecurring() bool {
 	return true
 }
 
-func (t *timeEvent) hasEventOccurred(ref time.Time) bool {
-	return t.asTimestamp(ref).Sub(ref) <= 0
+func (t *timeEvent) hasEventOccurred(scheduledAt time.Time, ref time.Time) bool {
+	return t.asTimestamp(scheduledAt).Sub(ref) <= 0
 }
 
 func (t *timeEvent) hasFinalEventOccurred(ref time.Time) bool {
@@ -213,6 +213,6 @@ func dump(e Event, ref time.Time) string {
 	if e.hasTimestamp() {
 		dump = fmt.Sprintf("%s, asTimestamp(.)=%v", dump, e.asTimestamp(ref))
 	}
-	dump = fmt.Sprintf("%s, isRecurring=%v, hasEventOccurred(.)=%v, hasFinalEventOccurred(.)=%v", dump, e.isRecurring(), e.hasEventOccurred(ref), e.hasFinalEventOccurred(ref))
+	dump = fmt.Sprintf("%s, isRecurring=%v, hasEventOccurred(., .)=%v, hasFinalEventOccurred(.)=%v", dump, e.isRecurring(), e.hasEventOccurred(ref, ref), e.hasFinalEventOccurred(ref))
 	return dump
 }

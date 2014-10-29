@@ -33,10 +33,14 @@ func (w *window) isPermanentlyClosed(ref time.Time) bool {
 
 	if w.until.hasTimestamp() && w.from.hasTimestamp() {
 		openTimestamp := w.from.asTimestamp(ref)
-		if openTimestamp.Sub(ref) < 0 {
-			return w.until.hasFinalEventOccurred(ref)
+		if w.from.hasEventOccurred(ref, ref) {
+			if w.from.hasFinalEventOccurred(openTimestamp) {
+				return w.until.hasEventOccurred(openTimestamp, ref)
+			} else {
+				return w.until.hasFinalEventOccurred(ref)
+			}
 		} else {
-			return w.until.hasFinalEventOccurred(openTimestamp)
+			return w.until.hasFinalEventOccurred(ref)
 		}
 	} else if !w.until.hasTimestamp() && !w.from.hasTimestamp() {
 		return false

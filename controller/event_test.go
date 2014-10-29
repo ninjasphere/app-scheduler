@@ -182,10 +182,10 @@ func TestRecurringEvents(t *testing.T) {
 	if b.hasFinalEventOccurred(earlierTime) {
 		t.Fatalf("the final event of recurring event never occurs")
 	}
-	if a.hasEventOccurred(testTime) {
+	if a.hasEventOccurred(testTime, testTime) {
 		t.Fatalf("the event has not occurred yet")
 	}
-	if !b.hasEventOccurred(testTime) {
+	if !b.hasEventOccurred(testTime, testTime) {
 		t.Fatalf("the earlier event has occurred")
 	}
 }
@@ -211,10 +211,10 @@ func TestNonRecurringEvents(t *testing.T) {
 	if !b.hasFinalEventOccurred(testTime) {
 		t.Fatalf("the final non re-curring event has occurred")
 	}
-	if a.hasEventOccurred(testTime) {
+	if a.hasEventOccurred(testTime, testTime) {
 		t.Fatalf("the event has not occurred yet")
 	}
-	if !b.hasEventOccurred(testTime) {
+	if !b.hasEventOccurred(testTime, testTime) {
 		t.Fatalf("expecting hasEventOccurred false but found the opposite")
 	}
 
