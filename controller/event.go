@@ -52,11 +52,12 @@ type sunrise struct {
 
 // Initialize the event from the specification.
 func newEvent(m *model.Event, closeEvent bool) (Event, error) {
+	var parsed time.Time
 	var err error
 
 	switch m.Rule {
 	case "timestamp":
-		parsed, err := time.Parse("2006-01-02 15:04:05", m.Param)
+		parsed, err = time.ParseInLocation("2006-01-02 15:04:05", m.Param, clock.Location())
 		if err == nil {
 			result := &timestamp{
 				timeEvent: timeEvent{
@@ -67,7 +68,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			return result, nil
 		}
 	case "time-of-day":
-		parsed, err := time.Parse("15:04:05", m.Param)
+		parsed, err = time.Parse("15:04:05", m.Param)
 		if err == nil {
 			result := &timeOfDay{
 				timeEvent: timeEvent{
@@ -79,7 +80,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			return result, nil
 		}
 	case "delay":
-		parsed, err := time.Parse("15:04:05", m.Param)
+		parsed, err = time.Parse("15:04:05", m.Param)
 		if err == nil {
 			result := &delay{
 				timeEvent: timeEvent{
@@ -90,7 +91,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			return result, nil
 		}
 	case "sunset":
-		parsed, err := time.Parse("15:04:05", "18:00:00")
+		parsed, err = time.Parse("15:04:05", "18:00:00")
 		if err == nil {
 			result := &sunset{
 				timeOfDay: timeOfDay{
@@ -104,7 +105,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			return result, nil
 		}
 	case "sunrise":
-		parsed, err := time.Parse("15:04:05", "06:00:00")
+		parsed, err = time.Parse("15:04:05", "06:00:00")
 		if err == nil {
 			result := &sunrise{
 				timeOfDay: timeOfDay{
@@ -139,6 +140,7 @@ func (t *timeEvent) waiter(ref time.Time) chan time.Time {
 		})
 	} else {
 		waiter <- now
+		log.Debugf("waiter fired event because time already passed %v", clock.Now())
 	}
 	return waiter
 }
