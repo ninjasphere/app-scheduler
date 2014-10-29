@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/ninjasphere/app-scheduler/controller"
+	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/go-ninja/api"
 	"github.com/ninjasphere/go-ninja/support"
 )
@@ -14,18 +18,32 @@ type service struct {
 
 type SchedulerApp struct {
 	support.AppSupport
+	scheduler *controller.Scheduler
 }
 
 type Config struct {
 }
 
-func (a *SchedulerApp) Start(config *Config) error {
-	a.SendEvent("config", config)
-	return nil
+func (a *SchedulerApp) Start(model *model.Schedule) error {
+	if a.scheduler != nil {
+		return fmt.Errorf("illegal state: scheduler is already running")
+	}
+	a.scheduler = &controller.Scheduler{}
+	err := a.scheduler.Start(model)
+	if err == nil {
+		a.SendEvent("config", model)
+	}
+	return err
 }
 
 func (a *SchedulerApp) Stop() error {
-	return nil
+	var err error
+	if a.scheduler != nil {
+		tmp := a.scheduler
+		a.scheduler = nil
+		err = tmp.Stop()
+	}
+	return err
 }
 
 func main() {
