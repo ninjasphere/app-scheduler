@@ -26,8 +26,9 @@ func (m *mockclock) SetNow(now time.Time) {
 	m.now = now
 	saved := make(map[time.Time][]callback)
 	for t, cbs := range m.callbacks {
-		if t.Sub(now) >= 0 {
+		if t.Sub(now) <= 0 {
 			for _, cb := range cbs {
+				log.Debugf("firing event for %v because time is now %v", t, now)
 				cb()
 			}
 		} else {
@@ -39,9 +40,11 @@ func (m *mockclock) SetNow(now time.Time) {
 
 func (m *mockclock) AfterFunc(delay time.Duration, then func()) {
 	if delay <= 0 {
+		log.Debugf("event for %d s fired now %v", delay/time.Second, m.now)
 		then()
 	} else {
 		when := m.now.Add(delay)
+		log.Debugf("at %s event for %d s scheduled for %v", m.now, delay/time.Second, when)
 		var list []callback
 		if list, ok := m.callbacks[when]; !ok {
 			list = make([]callback, 0)
