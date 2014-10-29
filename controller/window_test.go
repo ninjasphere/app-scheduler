@@ -88,3 +88,15 @@ func TestLaterTimestampWindowIsNotOpen(t *testing.T) {
 func TestOverlappingTimestampWindowIsNotOpen(t *testing.T) {
 	runOverlappingWindow(t, overlappingTimestampWindow)
 }
+
+func TestOverlappingTimestampOpenDelayCloseWindowIsNotOpen(t *testing.T) {
+	runOverlappingWindow(t, overlappingTimestampOpenDelayCloseWindow)
+}
+
+func TestEarlierTimestampOpenDelayCloseWindowIsNotOpen(t *testing.T) {
+	runNonOverlappingWindow(t, earlierTimestampOpenDelayCloseWindow, true)
+}
+
+func TestLaterTimestampOpenDelayCloseWindowIsNotOpen(t *testing.T) {
+	runNonOverlappingWindow(t, laterTimestampOpenDelayCloseWindow, false)
+}
