@@ -5,7 +5,7 @@ import (
 	"github.com/ninjasphere/go-ninja/logger"
 )
 
-var log logger.Logger
+var log *logger.Logger = logger.GetLogger("")
 
 type scheduler struct {
 	model *model.Schedule
