@@ -7,14 +7,12 @@ import (
 )
 
 type window struct {
-	model *model.Window
 	from  Event
 	until Event
 }
 
 func (w *window) init(m *model.Window) error {
 	var err error
-	w.model = m
 	w.from, err = newEvent(m.From, false)
 	if err != nil {
 		w.until, err = newEvent(m.Until, true)
