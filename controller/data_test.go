@@ -77,6 +77,22 @@ var (
 		Rule:  "delay",
 		Param: "00:45:00",
 	}
+	longDelayModel = &model.Event{
+		Rule:  "delay",
+		Param: "04:00:00",
+	}
+	earlierTimestampOpenDelayCloseWindow = &model.Window{
+		From:  muchEarlierTimestampModel,
+		Until: delayModel,
+	}
+	overlappingTimestampOpenDelayCloseWindow = &model.Window{
+		From:  beforeNowTimestampModel,
+		Until: longDelayModel,
+	}
+	laterTimestampOpenDelayCloseWindow = &model.Window{
+		From:  shortlyAfterNowTimestampModel,
+		Until: delayModel,
+	}
 	sunsetModel = &model.Event{
 		Rule: "sunset",
 	}
