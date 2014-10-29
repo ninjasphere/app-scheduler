@@ -18,7 +18,7 @@ func (t *task) init(m *model.Task) error {
 	if err != nil {
 		return err
 	}
-	t.quit = make(chan struct{})
+	t.quit = make(chan struct{}, 1)
 	return nil
 }
 
