@@ -100,7 +100,7 @@ func (w *window) whenClosed(opened time.Time) chan time.Time {
 }
 
 func (w *window) StringAt(ref time.Time) string {
-	return fmt.Sprintf("window[from: %s, until:%s]", w.from.StringAt(ref), w.until.StringAt(ref))
+	return fmt.Sprintf("window[from: %s, until:%s]", dump(w.from, ref), dump(w.until, ref))
 }
 
 func (w *window) String() string {

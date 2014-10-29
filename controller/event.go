@@ -23,8 +23,6 @@ type Event interface {
 	// Answer true if the final event of this type has occurred. Not true for recurring events
 	// or for non-recurring events whose timestamp is less than the reference timestamp.
 	hasFinalEventOccurred(ref time.Time) bool
-	// Answer a string description of the event at the specified time.
-	StringAt(ref time.Time) string
 }
 
 type timeEvent struct {
@@ -210,17 +208,11 @@ func (t *sunrise) asTimestamp(ref time.Time) time.Time {
 	return t.timeOfDay.asTimestamp(ref)
 }
 
-func (t *timeEvent) StringAt(ref time.Time) string {
-	var timestamp *time.Time
-	if t.hasTimestamp() {
-		tmp := t.asTimestamp(ref)
-		timestamp = &tmp
-	} else {
-		timestamp = nil
+func dump(e Event, ref time.Time) string {
+	dump := fmt.Sprintf("event @ %v, type=%s", ref, reflect.ValueOf(e).Type())
+	if e.hasTimestamp() {
+		dump = fmt.Sprintf("%s, asTimestamp(.)=%v", dump, e.asTimestamp(ref))
 	}
-	return fmt.Sprintf("%s[%v] @ %v -> %v isRecurring=%v", reflect.ValueOf(t).Type(), t.parsed, ref, timestamp, t.isRecurring())
-}
-
-func (t *timeEvent) String() string {
-	return t.StringAt(clock.Now())
+	dump = fmt.Sprintf("%s, isRecurring=%v, hasEventOccurred(.)=%v, hasFinalEventOccurred(.)=%v", dump, e.isRecurring(), e.hasEventOccurred(ref), e.hasFinalEventOccurred(ref))
+	return dump
 }
