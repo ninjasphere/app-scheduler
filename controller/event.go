@@ -56,7 +56,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 
 	switch m.Rule {
 	case "timestamp":
-		parsed, err := time.Parse("20060102T150405", m.Param)
+		parsed, err := time.Parse("2006-01-02 15:04:05", m.Param)
 		if err == nil {
 			result := &timestamp{
 				timeEvent: timeEvent{
