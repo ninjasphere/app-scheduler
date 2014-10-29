@@ -149,3 +149,17 @@ func TestBogusModel(t *testing.T) {
 func TestBogusTimestamp(t *testing.T) {
 	runBogus(t, bogusTimestamp)
 }
+
+func TestRecurringEvents(t *testing.T) {
+	e, _ := newEvent(beforeNowTimeOfDayModel, false)
+	if !e.isRecurring() {
+		t.Fatalf("expecting a recurring event")
+	}
+}
+
+func TestNonRecurringEvents(t *testing.T) {
+	e, _ := newEvent(beforeNowTimestampModel, false)
+	if e.isRecurring() {
+		t.Fatalf("expecting a non-recurring event")
+	}
+}

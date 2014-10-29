@@ -15,6 +15,8 @@ type Event interface {
 	asTimestamp(ref time.Time) time.Time
 	// Answer a channel for the event which receives a timestamp when the event occurs
 	waiter(ref time.Time) chan time.Time
+	// Answer true if the event is a recurring event but false if the event can only happen once
+	isRecurring() bool
 }
 
 type timeEvent struct {
@@ -128,6 +130,14 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 
 func (t *timeEvent) hasTimestamp() bool {
 	return true
+}
+
+func (t *timeEvent) isRecurring() bool {
+	return true
+}
+
+func (t *timestamp) isRecurring() bool {
+	return false
 }
 
 func (t *timeEvent) waiter(ref time.Time) chan time.Time {
