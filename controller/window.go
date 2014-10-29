@@ -32,7 +32,12 @@ func (w *window) init(m *model.Window) error {
 func (w *window) isPermanentlyClosed(ref time.Time) bool {
 
 	if w.until.hasTimestamp() && w.from.hasTimestamp() {
-		return w.until.hasFinalEventOccurred(w.from.asTimestamp(ref))
+		openTimestamp := w.from.asTimestamp(ref)
+		if openTimestamp.Sub(ref) < 0 {
+			return w.until.hasFinalEventOccurred(ref)
+		} else {
+			return w.until.hasFinalEventOccurred(openTimestamp)
+		}
 	} else if !w.until.hasTimestamp() && !w.from.hasTimestamp() {
 		return false
 	} else if w.until.hasTimestamp() {
