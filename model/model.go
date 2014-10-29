@@ -45,7 +45,7 @@ type Window struct {
 	Until *Event `json:"until,omitempty"`
 }
 
-// A Task runs in a Window and performs the Open actions, waits for the Until event to occur
+// A Task waits until the From event occurs (unless it has already occurred) then performs the Open actions, waits for the Until event to occur
 // then runs the Close actions. If the Window is a recurring window, then the cycle repeats, otherwise the Task ends.
 type Task struct {
 	Uuid        string         `json:"uuid,omitempty"`
