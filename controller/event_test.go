@@ -162,34 +162,60 @@ func TestBogusTimestamp(t *testing.T) {
 }
 
 func TestRecurringEvents(t *testing.T) {
-	e, _ := newEvent(afterNowTimeOfDayModel, false)
-	if !e.isRecurring() {
+	a, _ := newEvent(afterNowTimeOfDayModel, false)
+	b, _ := newEvent(beforeNowTimeOfDayModel, false)
+	if !a.isRecurring() {
 		t.Fatalf("expecting a recurring event")
 	}
-	if e.hasFinalEventOccurred(testTime) {
+	if !b.isRecurring() {
+		t.Fatalf("expecting a recurring event")
+	}
+	if a.hasFinalEventOccurred(testTime) {
 		t.Fatalf("the final event of recurring event never occurs")
 	}
-	if e.hasFinalEventOccurred(earlierTime) {
+	if b.hasFinalEventOccurred(testTime) {
+		t.Fatalf("the final event of recurring event should never occur")
+	}
+	if a.hasFinalEventOccurred(earlierTime) {
 		t.Fatalf("the final event of recurring event never occurs")
+	}
+	if b.hasFinalEventOccurred(earlierTime) {
+		t.Fatalf("the final event of recurring event never occurs")
+	}
+	if a.hasEventOccurred(testTime) {
+		t.Fatalf("the event has not occurred yet")
+	}
+	if !b.hasEventOccurred(testTime) {
+		t.Fatalf("the earlier event has occurred")
 	}
 }
 
 func TestNonRecurringEvents(t *testing.T) {
-	e, _ := newEvent(afterNowTimestampModel, false)
-	if e.isRecurring() {
+	a, _ := newEvent(afterNowTimestampModel, false)
+	b, _ := newEvent(beforeNowTimestampModel, false)
+	if a.isRecurring() {
 		t.Fatalf("expecting a non-recurring event")
 	}
-	if e.hasFinalEventOccurred(testTime) {
+	if b.isRecurring() {
+		t.Fatalf("expecting a non-recurring event")
+	}
+	if a.hasFinalEventOccurred(testTime) {
 		t.Fatalf("the final event of non-recurring event was marked as true event though it hasn't happened yet.")
 	}
-	if !e.hasFinalEventOccurred(futureTime) {
+	if !a.hasFinalEventOccurred(futureTimeDelta1) {
 		t.Fatalf("the final event should have occurred but didn't")
 	}
-	if !e.hasFinalEventOccurred(futureTimeDelta1) {
-		t.Fatalf("the final event should have occurred but didn't")
-	}
-	if e.hasFinalEventOccurred(futureTimeDeltaNeg1) {
+	if a.hasFinalEventOccurred(futureTimeDeltaNeg1) {
 		t.Fatalf("the final event should not have occurred but has")
+	}
+	if !b.hasFinalEventOccurred(testTime) {
+		t.Fatalf("the final non re-curring event has occurred")
+	}
+	if a.hasEventOccurred(testTime) {
+		t.Fatalf("the event has not occurred yet")
+	}
+	if !b.hasEventOccurred(testTime) {
+		t.Fatalf("expecting hasEventOccurred false but found the opposite")
 	}
 
 }

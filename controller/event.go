@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/ninjasphere/app-scheduler/model"
@@ -17,6 +18,8 @@ type Event interface {
 	waiter(ref time.Time) chan time.Time
 	// Answer true if the event is a recurring event but false if the event can only happen once
 	isRecurring() bool
+	// Answer true if asTimestamp(ref),Sub(ref) <= 0
+	hasEventOccurred(ref time.Time) bool
 	// Answer true if the final event of this type has occurred. Not true for recurring events
 	// or for non-recurring events whose timestamp is less than the reference timestamp.
 	hasFinalEventOccurred(ref time.Time) bool
@@ -143,6 +146,10 @@ func (t *timeEvent) hasTimestamp() bool {
 
 func (t *timeEvent) isRecurring() bool {
 	return true
+}
+
+func (t *timeEvent) hasEventOccurred(ref time.Time) bool {
+	return t.asTimestamp(ref).Sub(ref) <= 0
 }
 
 func (t *timeEvent) hasFinalEventOccurred(ref time.Time) bool {
