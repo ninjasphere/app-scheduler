@@ -6,8 +6,11 @@ import (
 )
 
 var (
-	testTime   = time.Date(2014, 10, 29, 11, 22, 30, 0, time.Now().Location())
-	futureTime = time.Date(2014, 10, 29, 12, 00, 00, 0, time.Now().Location())
+	earlierTime         = time.Date(2014, 10, 29, 0, 6, 00, 0, time.Now().Location())
+	testTime            = time.Date(2014, 10, 29, 11, 22, 30, 0, time.Now().Location())
+	futureTime          = time.Date(2014, 10, 29, 12, 00, 00, 0, time.Now().Location())
+	futureTimeDelta1    = time.Date(2014, 10, 29, 12, 00, 00, 1, time.Now().Location())
+	futureTimeDeltaNeg1 = time.Date(2014, 10, 29, 11, 59, 59, 999999999, time.Now().Location())
 
 	beforeNowTimeOfDayModel = &model.Event{
 		Rule:  "time-of-day",

@@ -151,15 +151,34 @@ func TestBogusTimestamp(t *testing.T) {
 }
 
 func TestRecurringEvents(t *testing.T) {
-	e, _ := newEvent(beforeNowTimeOfDayModel, false)
+	e, _ := newEvent(afterNowTimeOfDayModel, false)
 	if !e.isRecurring() {
 		t.Fatalf("expecting a recurring event")
+	}
+	if e.hasFinalEventOccurred(testTime) {
+		t.Fatalf("the final event of recurring event never occurs")
+	}
+	if e.hasFinalEventOccurred(earlierTime) {
+		t.Fatalf("the final event of recurring event never occurs")
 	}
 }
 
 func TestNonRecurringEvents(t *testing.T) {
-	e, _ := newEvent(beforeNowTimestampModel, false)
+	e, _ := newEvent(afterNowTimestampModel, false)
 	if e.isRecurring() {
 		t.Fatalf("expecting a non-recurring event")
 	}
+	if e.hasFinalEventOccurred(testTime) {
+		t.Fatalf("the final event of non-recurring event was marked as true event though it hasn't happened yet.")
+	}
+	if !e.hasFinalEventOccurred(futureTime) {
+		t.Fatalf("the final event should have occurred but didn't")
+	}
+	if !e.hasFinalEventOccurred(futureTimeDelta1) {
+		t.Fatalf("the final event should have occurred but didn't")
+	}
+	if e.hasFinalEventOccurred(futureTimeDeltaNeg1) {
+		t.Fatalf("the final event should not have occurred but has")
+	}
+
 }
