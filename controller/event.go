@@ -146,7 +146,7 @@ func (t *timestamp) asTimestamp(ref time.Time) time.Time {
 
 // Return the specified time of day, relative to the reference timestamp.
 func (t *timeOfDay) asTimestamp(ref time.Time) time.Time {
-	tmp := time.Date(ref.Year(), ref.Month(), ref.Day(), (*t.parsed).Hour(), (*t.parsed).Minute(), (*t.parsed).Second(), 0, nil)
+	tmp := time.Date(ref.Year(), ref.Month(), ref.Day(), (*t.parsed).Hour(), (*t.parsed).Minute(), (*t.parsed).Second(), 0, clock.Location())
 	if tmp.Sub(ref) < 0 {
 		tmp = tmp.AddDate(0, 0, 1)
 	}

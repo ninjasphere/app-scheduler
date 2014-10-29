@@ -50,3 +50,7 @@ func (m *mockclock) AfterFunc(delay time.Duration, then func()) {
 		m.callbacks[when] = append(list, then)
 	}
 }
+
+func (m *mockclock) Location() *time.Location {
+	return m.now.Location()
+}
