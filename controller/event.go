@@ -60,6 +60,9 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 	var parsed time.Time
 	var err error
 
+	if m == nil {
+		return nil, fmt.Errorf("illegal argument: model == nil")
+	}
 	switch m.Rule {
 	case "timestamp":
 		parsed, err = time.ParseInLocation("2006-01-02 15:04:05", m.Param, clock.Location())

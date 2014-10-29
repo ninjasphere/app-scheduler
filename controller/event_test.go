@@ -143,6 +143,17 @@ func TestOpenSunriseBeforeNow(t *testing.T) {
 func TestCloseSunriseAfterNow(t *testing.T) {
 	runAfterNow(t, sunriseModel, true, false)
 }
+
+func TestNilModel(t *testing.T) {
+	event, err := newEvent(nil, false)
+	if err == nil {
+		t.Fatalf("expecting error for nil model")
+	}
+	if event != nil {
+		t.Fatalf("not expecting event for nil model")
+	}
+}
+
 func TestBogusModel(t *testing.T) {
 	runBogus(t, bogusModel)
 }
