@@ -57,7 +57,7 @@ func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 		copy := task.Uuid
 		return &copy, err
 	} else {
-		return "", fmt.Errorf("cannot schedule a task while the scheduler is stopped")
+		return nil, fmt.Errorf("cannot schedule a task while the scheduler is stopped")
 	}
 }
 
