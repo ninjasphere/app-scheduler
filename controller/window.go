@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/ninjasphere/app-scheduler/model"
@@ -13,6 +14,9 @@ type window struct {
 
 func (w *window) init(m *model.Window) error {
 	var err error
+	if m == nil {
+		return fmt.Errorf("illegal argument: m == nil")
+	}
 	w.from, err = newEvent(m.From, false)
 	if err == nil {
 		w.until, err = newEvent(m.Until, true)
