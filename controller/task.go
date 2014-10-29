@@ -8,13 +8,11 @@ import (
 )
 
 type task struct {
-	model  *model.Task
 	window *window
 	quit   chan struct{}
 }
 
 func (t *task) init(m *model.Task) error {
-	t.model = m
 	t.window = &window{}
 	err := t.window.init(m.Window)
 	if err != nil {
