@@ -20,6 +20,24 @@ func (w *window) init(m *model.Window) error {
 	return err
 }
 
+// Answer true if the window is permanently closed with respect to the specified time.
+// That is: the close event is a non-recurring event has already occurred.
+//
+// This method is never true for recurring close events provided the open
+// event has not yet occurred or itself recurring
+func (w *window) isPermanentlyClosed(ref time.Time) bool {
+
+	if w.until.hasTimestamp() && w.from.hasTimestamp() {
+		return w.until.hasFinalEventOccurred(w.from.asTimestamp(ref))
+	} else if !w.until.hasTimestamp() && !w.from.hasTimestamp() {
+		return false
+	} else if w.until.hasTimestamp() {
+		return w.until.hasFinalEventOccurred(ref)
+	} else { //if w.from.hasTimestamp() {
+		return w.from.hasFinalEventOccurred(ref)
+	}
+}
+
 // Answer true if the window is open with respect to the specified time.
 func (w *window) isOpen(ref time.Time) bool {
 	openWaitsForTime := w.from.hasTimestamp()

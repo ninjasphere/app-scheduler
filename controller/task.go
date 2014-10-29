@@ -33,6 +33,11 @@ func (t *task) loop() {
 		var openedAt time.Time
 		now := clock.Now()
 
+		if t.window.isPermanentlyClosed(now) {
+			// stop running when we can run no more
+			return
+		}
+
 		if !t.window.isOpen(now) {
 			var quit bool
 			quit, openedAt = t.waitForOpenEvent(now)
