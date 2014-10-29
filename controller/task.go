@@ -31,7 +31,7 @@ func (t *task) loop() {
 		// FIXME: if the window is not recurrent, then we need to check that it is still valid.
 
 		var openedAt time.Time
-		now := time.Now()
+		now := clock.Now()
 
 		if !t.window.isOpen(now) {
 			var quit bool
@@ -62,7 +62,7 @@ func (t *task) waitForOpenEvent(ref time.Time) (bool, time.Time) {
 	select {
 	case quitSignal := <-t.quit:
 		_ = quitSignal
-		return true, time.Now()
+		return true, clock.Now()
 	case openSignal := <-done:
 		return false, openSignal
 	}

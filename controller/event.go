@@ -126,12 +126,12 @@ func (t *timeEvent) hasTimestamp() bool {
 }
 
 func (t *timeEvent) waiter(ref time.Time) chan time.Time {
-	now := time.Now()
+	now := clock.Now()
 	delay := t.asTimestamp(ref).Sub(now)
 	waiter := make(chan time.Time, 1)
 	if delay > 0 {
-		time.AfterFunc(delay, func() {
-			waiter <- time.Now()
+		clock.AfterFunc(delay, func() {
+			waiter <- clock.Now()
 		})
 	} else {
 		waiter <- now
