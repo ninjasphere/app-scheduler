@@ -43,7 +43,7 @@ func (a *SchedulerApp) Stop() error {
 	return err
 }
 
-func (a *SchedulerApp) Schedule(task *model.Task) (string, error) {
+func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 	if a.scheduler != nil {
 		err := a.Cancel(task.Uuid)
 		if err != nil {
@@ -54,7 +54,8 @@ func (a *SchedulerApp) Schedule(task *model.Task) (string, error) {
 			a.model.Tasks = append(a.model.Tasks, task)
 			a.SendEvent("config", a.model)
 		}
-		return task.Uuid, err
+		copy := task.Uuid
+		return &copy, err
 	} else {
 		return "", fmt.Errorf("cannot schedule a task while the scheduler is stopped")
 	}
