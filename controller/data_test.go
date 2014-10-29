@@ -6,15 +6,32 @@ import (
 )
 
 var (
+	muchEarlierTime     = time.Date(2014, 10, 29, 0, 3, 00, 0, time.Now().Location())
 	earlierTime         = time.Date(2014, 10, 29, 0, 6, 00, 0, time.Now().Location())
 	testTime            = time.Date(2014, 10, 29, 11, 22, 30, 0, time.Now().Location())
 	futureTime          = time.Date(2014, 10, 29, 12, 00, 00, 0, time.Now().Location())
 	futureTimeDelta1    = time.Date(2014, 10, 29, 12, 00, 00, 1, time.Now().Location())
 	futureTimeDeltaNeg1 = time.Date(2014, 10, 29, 11, 59, 59, 999999999, time.Now().Location())
 
+	muchEarlierTimeOfDayModel = &model.Event{
+		Rule:  "time-of-day",
+		Param: "03:00:00",
+	}
 	beforeNowTimeOfDayModel = &model.Event{
 		Rule:  "time-of-day",
 		Param: "09:00:00",
+	}
+	earlierWindow = &model.Window{
+		From:  muchEarlierTimeOfDayModel,
+		Until: beforeNowTimeOfDayModel,
+	}
+	overlappingWindow = &model.Window{
+		From:  beforeNowTimeOfDayModel,
+		Until: afterNowTimeOfDayModel,
+	}
+	laterWindow = &model.Window{
+		From:  shortlyAfterNowTimeOfDayModel,
+		Until: afterNowTimeOfDayModel,
 	}
 	shortlyAfterNowTimeOfDayModel = &model.Event{
 		Rule:  "time-of-day",
