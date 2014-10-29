@@ -21,15 +21,15 @@ var (
 		Rule:  "time-of-day",
 		Param: "09:00:00",
 	}
-	earlierWindow = &model.Window{
+	earlierTimeOfDayWindow = &model.Window{
 		From:  muchEarlierTimeOfDayModel,
 		Until: beforeNowTimeOfDayModel,
 	}
-	overlappingWindow = &model.Window{
+	overlappingTimeOfDayWindow = &model.Window{
 		From:  beforeNowTimeOfDayModel,
 		Until: afterNowTimeOfDayModel,
 	}
-	laterWindow = &model.Window{
+	laterTimeOfDayWindow = &model.Window{
 		From:  shortlyAfterNowTimeOfDayModel,
 		Until: afterNowTimeOfDayModel,
 	}
@@ -41,6 +41,10 @@ var (
 		Rule:  "time-of-day",
 		Param: "12:00:00",
 	}
+	muchEarlierTimestampModel = &model.Event{
+		Rule:  "timestamp",
+		Param: "2014-10-29 03:00:00",
+	}
 	beforeNowTimestampModel = &model.Event{
 		Rule:  "timestamp",
 		Param: "2014-10-29 09:00:00",
@@ -48,6 +52,22 @@ var (
 	afterNowTimestampModel = &model.Event{
 		Rule:  "timestamp",
 		Param: "2014-10-29 12:00:00",
+	}
+	shortlyAfterNowTimestampModel = &model.Event{
+		Rule:  "timestamp",
+		Param: "2014-10-29 11:37:30",
+	}
+	earlierTimestampWindow = &model.Window{
+		From:  muchEarlierTimestampModel,
+		Until: beforeNowTimestampModel,
+	}
+	overlappingTimestampWindow = &model.Window{
+		From:  beforeNowTimestampModel,
+		Until: afterNowTimestampModel,
+	}
+	laterTimestampWindow = &model.Window{
+		From:  shortlyAfterNowTimestampModel,
+		Until: afterNowTimeOfDayModel,
 	}
 	shortDelayModel = &model.Event{
 		Rule:  "delay",
