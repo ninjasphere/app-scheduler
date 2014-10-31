@@ -8,11 +8,13 @@ import (
 )
 
 type task struct {
+	model  *model.Task
 	window *window
 	quit   chan struct{}
 }
 
 func (t *task) init(m *model.Task) error {
+	t.model = m
 	t.window = &window{}
 	err := t.window.init(m.Window)
 	if err != nil {
@@ -32,6 +34,7 @@ func (t *task) loop() {
 		now := clock.Now()
 
 		if t.window.isPermanentlyClosed(now) {
+			log.Debugf("at '%v' the window '%v' for task '%s' became permanently closed. the task will exit.", now, t.window, t.model.Uuid)
 			// stop running when we can run no more
 			return
 		}

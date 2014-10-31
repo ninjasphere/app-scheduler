@@ -108,5 +108,5 @@ func (w *window) StringAt(ref time.Time) string {
 }
 
 func (w *window) String() string {
-	return w.StringAt(clock.Now())
+	return fmt.Sprintf("[%s, %s]", w.from.String(), w.until.String())
 }

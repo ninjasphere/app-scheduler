@@ -10,22 +10,22 @@ import (
 )
 
 type Event interface {
-	// Time based events have timestamps, other types of events do not
-	hasTimestamp() bool
-	// Answers the timestamp of time-based event. Panics otherwise.
-	asTimestamp(ref time.Time) time.Time
-	// Answer a channel for the event which receives a timestamp when the event occurs
-	waiter(ref time.Time) chan time.Time
-	// Answer true if the event is a recurring event but false if the event can only happen once
-	isRecurring() bool
-	// Answer true if the event scheduled at scheduledAt has occurred by ref
-	hasEventOccurred(scheduledAt time.Time, ref time.Time) bool
-	// Answer true if the final event of this type has occurred. Not true for recurring events
-	// or for non-recurring events whose timestamp is less than the reference timestamp.
+	String() string                      // A description of the event.
+	hasTimestamp() bool                  // Time based events have timestamps, other types of events do not
+	asTimestamp(ref time.Time) time.Time // Answers the timestamp of time-based event. Panics otherwise.
+	waiter(ref time.Time) chan time.Time // Answer a channel for the event which receives a timestamp when the event occurs
+	isRecurring() bool                   // Answer true if the event is a recurring event but false if the event can only happen once
+	hasEventOccurred(                    // Answer true if the event scheduled at scheduledAt has occurred by ref
+		scheduledAt time.Time,
+		ref time.Time) bool
+	// Answer true if the final event of this type has occurred. Not true for
+	// recurring events or for non-recurring events whose timestamp is less than the reference timestamp.
 	hasFinalEventOccurred(ref time.Time) bool
 }
 
 type timeEvent struct {
+	// the event model
+	model *model.Event
 	// true when the event has fired
 	lastFired time.Time
 	// the timestamp parsed from the time specification
@@ -75,6 +75,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 		if err == nil {
 			result := &timestamp{
 				timeEvent: timeEvent{
+					model:  m,
 					parsed: &parsed,
 				},
 			}
@@ -86,6 +87,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 		if err == nil {
 			result := &timeOfDay{
 				timeEvent: timeEvent{
+					model:  m,
 					parsed: &parsed,
 				},
 				closeEvent: closeEvent,
@@ -98,6 +100,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 		if err == nil {
 			result := &delay{
 				timeEvent: timeEvent{
+					model:  m,
 					parsed: &parsed,
 				},
 			}
@@ -110,6 +113,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			result := &sunset{
 				timeOfDay: timeOfDay{
 					timeEvent: timeEvent{
+						model:  m,
 						parsed: &parsed,
 					},
 					closeEvent: closeEvent,
@@ -124,6 +128,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			result := &sunrise{
 				timeOfDay: timeOfDay{
 					timeEvent: timeEvent{
+						model:  m,
 						parsed: &parsed,
 					},
 					closeEvent: closeEvent,
@@ -138,6 +143,10 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 	}
 
 	return nil, err
+}
+
+func (t *timeEvent) String() string {
+	return fmt.Sprintf("%s %s", t.model.Rule, t.model.Param)
 }
 
 func (t *timeEvent) hasTimestamp() bool {
