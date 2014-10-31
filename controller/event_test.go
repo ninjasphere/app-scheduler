@@ -219,3 +219,17 @@ func TestNonRecurringEvents(t *testing.T) {
 	}
 
 }
+
+func TestThatTimeOfDayEventFiresAtMostOncePerDay(t *testing.T) {
+	mockClock := initMockClock(testTime)
+	e, _ := newEvent(beforeNowTimeOfDayModel, false)
+	waiter := e.waiter(clock.Now())
+	<-waiter
+	mockClock.SetNow(futureTime)
+	newWaiter := e.waiter(clock.Now())
+	select {
+	case firedAgain := <-newWaiter:
+		t.Fatalf("waiter should not have fired again but did %v", firedAgain)
+	default:
+	}
+}
