@@ -87,10 +87,10 @@ func (t *task) waitForCloseEvent(opened time.Time) bool {
 }
 
 func (t *task) doOpenActions() {
-	fmt.Printf("TBD: open actions to be performed now")
+	fmt.Printf("TBD: open actions to be performed now\n")
 	//
 }
 
 func (t *task) doCloseActions() {
-	fmt.Printf("TBD: close actions to be performed now")
+	fmt.Printf("TBD: close actions to be performed now\n")
 }
