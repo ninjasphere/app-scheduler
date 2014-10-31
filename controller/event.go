@@ -29,7 +29,7 @@ type timeEvent struct {
 	// the timestamp parsed from the time specification
 	parsed *time.Time
 	// the timestamp for an event that occurs near this time.
-	asTimestamp func(ref time.Time) time.Time
+	polyAsTimestamp func(ref time.Time) time.Time
 }
 
 // An event that occurs at a specified timestamp
@@ -76,7 +76,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 					parsed: &parsed,
 				},
 			}
-			result.timeEvent.asTimestamp = result.asTimestamp
+			result.timeEvent.polyAsTimestamp = result.asTimestamp
 			return result, nil
 		}
 	case "time-of-day":
@@ -88,7 +88,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 				},
 				closeEvent: closeEvent,
 			}
-			result.timeEvent.asTimestamp = result.asTimestamp
+			result.timeEvent.polyAsTimestamp = result.asTimestamp
 			return result, nil
 		}
 	case "delay":
@@ -99,7 +99,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 					parsed: &parsed,
 				},
 			}
-			result.timeEvent.asTimestamp = result.asTimestamp
+			result.timeEvent.polyAsTimestamp = result.asTimestamp
 			return result, nil
 		}
 	case "sunset":
@@ -113,7 +113,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 					closeEvent: closeEvent,
 				},
 			}
-			result.timeEvent.asTimestamp = result.asTimestamp
+			result.timeEvent.polyAsTimestamp = result.asTimestamp
 			return result, nil
 		}
 	case "sunrise":
@@ -127,7 +127,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 					closeEvent: closeEvent,
 				},
 			}
-			result.timeEvent.asTimestamp = result.asTimestamp
+			result.timeEvent.polyAsTimestamp = result.asTimestamp
 			return result, nil
 		}
 	default:
@@ -147,7 +147,7 @@ func (t *timeEvent) isRecurring() bool {
 }
 
 func (t *timeEvent) hasEventOccurred(scheduledAt time.Time, ref time.Time) bool {
-	return t.asTimestamp(scheduledAt).Sub(ref) <= 0
+	return t.polyAsTimestamp(scheduledAt).Sub(ref) <= 0
 }
 
 func (t *timeEvent) hasFinalEventOccurred(ref time.Time) bool {
@@ -159,12 +159,12 @@ func (t *timestamp) isRecurring() bool {
 }
 
 func (t *timestamp) hasFinalEventOccurred(ref time.Time) bool {
-	return t.asTimestamp(ref).Sub(ref) <= 0
+	return t.polyAsTimestamp(ref).Sub(ref) <= 0
 }
 
 func (t *timeEvent) waiter(ref time.Time) chan time.Time {
 	now := clock.Now()
-	delay := t.asTimestamp(ref).Sub(now)
+	delay := t.polyAsTimestamp(ref).Sub(now)
 	waiter := make(chan time.Time, 1)
 	if delay > 0 {
 		clock.AfterFunc(delay, func() {
