@@ -26,6 +26,8 @@ type Event interface {
 }
 
 type timeEvent struct {
+	// true when the event has fired
+	lastFired time.Time
 	// the timestamp parsed from the time specification
 	parsed *time.Time
 	// the timestamp for an event that occurs near this time.
@@ -164,15 +166,23 @@ func (t *timestamp) hasFinalEventOccurred(ref time.Time) bool {
 
 func (t *timeEvent) waiter(ref time.Time) chan time.Time {
 	now := clock.Now()
-	delay := t.polyAsTimestamp(ref).Sub(now)
+	when := t.polyAsTimestamp(ref)
+	delay := when.Sub(now)
 	waiter := make(chan time.Time, 1)
-	if delay > 0 {
-		clock.AfterFunc(delay, func() {
-			waiter <- clock.Now()
-		})
+	if when.Sub(t.lastFired) >= 0 {
+		if delay > 0 {
+			log.Debugf("waiting now (%v) for an event at (%v)", clock.Now(), when)
+			clock.AfterFunc(delay, func() {
+				t.lastFired = clock.Now()
+				waiter <- t.lastFired
+			})
+		} else {
+			t.lastFired = now
+			waiter <- now
+			log.Debugf("waiter fired event because time already passed %v", clock.Now())
+		}
 	} else {
-		waiter <- now
-		log.Debugf("waiter fired event because time already passed %v", clock.Now())
+		log.Warningf("this waiter will block forever because the event @ %v was already fired at %v", delay, t.lastFired)
 	}
 	return waiter
 }
@@ -186,6 +196,9 @@ func (t *timestamp) asTimestamp(ref time.Time) time.Time {
 func (t *timeOfDay) asTimestamp(ref time.Time) time.Time {
 	tmp := time.Date(ref.Year(), ref.Month(), ref.Day(), (*t.parsed).Hour(), (*t.parsed).Minute(), (*t.parsed).Second(), 0, clock.Location())
 	if tmp.Sub(ref) < 0 && t.closeEvent {
+		tmp = tmp.AddDate(0, 0, 1)
+	}
+	for t.lastFired.Sub(tmp) >= 0 {
 		tmp = tmp.AddDate(0, 0, 1)
 	}
 	return tmp
