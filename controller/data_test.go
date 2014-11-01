@@ -93,6 +93,10 @@ var (
 		From:  shortlyAfterNowTimestampModel,
 		Until: delayModel,
 	}
+	earlierTimeOfDayOpenDelayCloseWindow = &model.Window{
+		From:  muchEarlierTimeOfDayModel,
+		Until: delayModel,
+	}
 	sunsetModel = &model.Event{
 		Rule: "sunset",
 	}
@@ -105,5 +109,29 @@ var (
 	bogusTimestamp = &model.Event{
 		Rule:  "timestamp",
 		Param: "bogus",
+	}
+	taskWithEarlierTimeOfDayOpenDelayCloseWindow = &model.Task{
+		ID:     "task",
+		Window: earlierTimeOfDayOpenDelayCloseWindow,
+		Open: []*model.ThingAction{
+			&model.ThingAction{
+				ActionType: "thing-action",
+				Action:     "turnOn",
+				ThingID:    "some-thing",
+			},
+		},
+		Close: []*model.ThingAction{},
+	}
+	taskWithEarlierTimestampOpenDelayCloseWindow = &model.Task{
+		ID:     "task",
+		Window: earlierTimestampOpenDelayCloseWindow,
+		Open: []*model.ThingAction{
+			&model.ThingAction{
+				ActionType: "thing-action",
+				Action:     "turnOn",
+				ThingID:    "some-thing",
+			},
+		},
+		Close: []*model.ThingAction{},
 	}
 )
