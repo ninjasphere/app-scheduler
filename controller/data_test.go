@@ -81,6 +81,14 @@ var (
 		Rule:  "delay",
 		Param: "04:00:00",
 	}
+	oneMinuteDelay = &model.Event{
+		Rule:  "delay",
+		Param: "00:01:00",
+	}
+	fourMinuteDelay = &model.Event{
+		Rule:  "delay",
+		Param: "00:04:00",
+	}
 	earlierTimestampOpenDelayCloseWindow = &model.Window{
 		From:  muchEarlierTimestampModel,
 		Until: delayModel,
@@ -125,6 +133,22 @@ var (
 	taskWithEarlierTimestampOpenDelayCloseWindow = &model.Task{
 		ID:     "task",
 		Window: earlierTimestampOpenDelayCloseWindow,
+		Open: []*model.ThingAction{
+			{
+				ActionType: "thing-action",
+				Action:     "turnOn",
+				ThingID:    "some-thing",
+			},
+		},
+		Close: []*model.ThingAction{},
+	}
+	windowWithTwoDelayEvents = &model.Window{
+		From:  oneMinuteDelay,
+		Until: fourMinuteDelay,
+	}
+	taskWithTwoDelayEvents = &model.Task{
+		ID:     "task",
+		Window: windowWithTwoDelayEvents,
 		Open: []*model.ThingAction{
 			{
 				ActionType: "thing-action",

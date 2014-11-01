@@ -52,3 +52,25 @@ func TestTaskRespectsPermanentlyClosedWindows(t *testing.T) {
 		t.Fatalf("expected task to exit")
 	}
 }
+
+func TestTaskWith2DelayEvents(t *testing.T) {
+	mockClock := initMockClock(testTime)
+	task := &task{}
+	actuations := make(chan actuationRequest, 2)
+	if err := task.init(taskWithTwoDelayEvents, actuations); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	go func() {
+		task.loop()
+	}()
+	nextTime := testTime.Add(time.Minute * time.Duration(1))
+	time.Sleep(time.Millisecond * time.Duration(500))
+	mockClock.SetNow(nextTime)
+	time.Sleep(time.Millisecond * time.Duration(500))
+	select {
+	case actuation := <-actuations:
+		actuation.reply <- nil
+	default:
+		t.Fatalf("expected actuation did not occur")
+	}
+}
