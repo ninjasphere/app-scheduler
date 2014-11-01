@@ -16,6 +16,7 @@ var (
 	info = ninja.LoadModuleInfo("./package.json")
 )
 
+//SchedulerApp describes the scheduler application.
 type SchedulerApp struct {
 	support.AppSupport
 	scheduler *controller.Scheduler
@@ -23,6 +24,7 @@ type SchedulerApp struct {
 	service   *rpc.ExportedService
 }
 
+// Start is called after the ExportApp call is complete.
 func (a *SchedulerApp) Start(model *model.Schedule) error {
 	if a.scheduler != nil {
 		return fmt.Errorf("illegal state: scheduler is already running")
@@ -37,6 +39,7 @@ func (a *SchedulerApp) Start(model *model.Schedule) error {
 	return err
 }
 
+// Stop the scheduler module.
 func (a *SchedulerApp) Stop() error {
 	var err error
 	if a.scheduler != nil {
@@ -47,6 +50,7 @@ func (a *SchedulerApp) Stop() error {
 	return err
 }
 
+// Schedule a new task or re-schedules and existing task.
 func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 	if a.scheduler != nil {
 		err := a.Cancel(task.Uuid)
@@ -60,23 +64,23 @@ func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 		}
 		copy := task.Uuid
 		return &copy, err
-	} else {
-		return nil, fmt.Errorf("cannot schedule a task while the scheduler is stopped")
 	}
+	return nil, fmt.Errorf("cannot schedule a task while the scheduler is stopped")
 }
 
-func (a *SchedulerApp) Cancel(taskId string) error {
+// Cancel an existing task.
+func (a *SchedulerApp) Cancel(taskID string) error {
 	if a.scheduler != nil {
 		var err error
 		found := -1
 		for i, t := range a.model.Tasks {
-			if t.Uuid == taskId {
+			if t.Uuid == taskID {
 				found = i
 				break
 			}
 		}
 		if found > -1 {
-			err = a.scheduler.Cancel(taskId)
+			err = a.scheduler.Cancel(taskID)
 			if err == nil {
 				a.model.Tasks = append(a.model.Tasks[0:found], a.model.Tasks[found+1:]...)
 				a.SendEvent("config", a.model)
@@ -85,9 +89,8 @@ func (a *SchedulerApp) Cancel(taskId string) error {
 			err = nil
 		}
 		return err
-	} else {
-		return fmt.Errorf("cannot cancel a task while the scheduler is stopped")
 	}
+	return fmt.Errorf("cannot cancel a task while the scheduler is stopped")
 }
 
 func main() {
