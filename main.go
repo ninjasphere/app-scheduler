@@ -50,7 +50,7 @@ func (a *SchedulerApp) Stop() error {
 	return err
 }
 
-// Schedule a new task or re-schedules and existing task.
+// Schedule a new task or re-schedules an existing task.
 func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 	if a.scheduler != nil {
 		err := a.Cancel(task.Uuid)
@@ -110,11 +110,10 @@ func main() {
 		Schema: "http://schema.ninjablocks.com/service/scheduler",
 	}
 
-	service, err := app.Conn.ExportService(app, topic, announcement)
+	app.service, err = app.Conn.ExportService(app, topic, announcement)
 	if err != nil {
 		app.Log.Fatalf("failed to export scheduler service: %v", err)
 	}
-	_ = service
 
 	support.WaitUntilSignal()
 }
