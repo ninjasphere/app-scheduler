@@ -114,7 +114,7 @@ var (
 		ID:     "task",
 		Window: earlierTimeOfDayOpenDelayCloseWindow,
 		Open: []*model.ThingAction{
-			&model.ThingAction{
+			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
 				ThingID:    "some-thing",
@@ -126,7 +126,7 @@ var (
 		ID:     "task",
 		Window: earlierTimestampOpenDelayCloseWindow,
 		Open: []*model.ThingAction{
-			&model.ThingAction{
+			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
 				ThingID:    "some-thing",
