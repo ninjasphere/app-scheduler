@@ -27,14 +27,16 @@ func (t *task) init(m *model.Task, actuations chan actuationRequest) error {
 	for _, a := range m.Open {
 		if actor, err := newAction(a); err == nil {
 			t.openers = append(t.openers, actor)
+		} else {
+			return err
 		}
-		return err
 	}
 	for _, a := range m.Close {
 		if actor, err := newAction(a); err == nil {
 			t.closers = append(t.closers, actor)
+		} else {
+			return err
 		}
-		return err
 	}
 
 	t.quit = make(chan struct{}, 1)
@@ -47,28 +49,27 @@ func (t *task) loop() {
 
 		// FIXME: if the window is not recurrent, then we need to check that it is still valid.
 
-		var openedAt time.Time
 		now := clock.Now()
 
-		if t.window.isPermanentlyClosed(now) {
-			log.Debugf("at '%v' the window '%v' for task '%s' became permanently closed. the task will exit.", now, t.window, t.model.ID)
-			// stop running when we can run no more
-			return
-		}
-
-		if !t.window.isOpen(now) {
-			var quit bool
-			quit, openedAt = t.waitForOpenEvent(now)
-			if quit {
+		for {
+			if t.window.isPermanentlyClosed(now) {
+				log.Debugf("at '%v' the window '%v' for task '%s' became permanently closed. the task will exit.", now, t.window, t.model.ID)
+				// stop running when we can run no more
 				return
 			}
-		} else {
-			openedAt = now
+
+			if !t.window.isOpen(now) {
+				var quit bool
+				quit, now = t.waitForOpenEvent(now)
+				if quit {
+					return
+				}
+			}
 		}
 
 		t.doActions("open", t.openers)
 
-		if t.waitForCloseEvent(openedAt) {
+		if t.waitForCloseEvent(now) {
 			return
 		}
 
