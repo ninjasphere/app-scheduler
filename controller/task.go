@@ -58,7 +58,9 @@ func (t *task) loop() {
 				return
 			}
 
-			if !t.window.isOpen(now) {
+			if t.window.isOpen(now) {
+				break
+			} else {
 				var quit bool
 				quit, now = t.waitForOpenEvent(now)
 				if quit {
