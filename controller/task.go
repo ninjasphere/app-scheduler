@@ -1,25 +1,44 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/ninjasphere/app-scheduler/model"
 	"time"
 )
 
 type task struct {
-	model  *model.Task
-	window *window
-	quit   chan struct{}
+	model      *model.Task
+	window     *window
+	openers    []*action
+	closers    []*action
+	quit       chan struct{}
+	actuations chan actuationRequest
 }
 
-func (t *task) init(m *model.Task) error {
+func (t *task) init(m *model.Task, actuations chan actuationRequest) error {
 	t.model = m
 	t.window = &window{}
+	t.actuations = actuations
 	err := t.window.init(m.Window)
 	if err != nil {
 		return err
 	}
+	t.openers = make([]*action, 0, 0)
+	t.closers = make([]*action, 0, 0)
+	for _, a := range m.Open {
+		if actor, err := newAction(a); err != nil {
+			return err
+		} else {
+			t.openers = append(t.openers, actor)
+		}
+	}
+	for _, a := range m.Close {
+		if actor, err := newAction(a); err != nil {
+			return err
+		} else {
+			t.closers = append(t.closers, actor)
+		}
+	}
+
 	t.quit = make(chan struct{}, 1)
 	return nil
 }
@@ -49,13 +68,13 @@ func (t *task) loop() {
 			openedAt = now
 		}
 
-		t.doOpenActions()
+		t.doActions("open", t.openers)
 
 		if t.waitForCloseEvent(openedAt) {
 			return
 		}
 
-		t.doCloseActions()
+		t.doActions("close", t.closers)
 
 	}
 }
@@ -89,11 +108,16 @@ func (t *task) waitForCloseEvent(opened time.Time) bool {
 	}
 }
 
-func (t *task) doOpenActions() {
-	fmt.Printf("TBD: open actions to be performed now\n")
-	//
-}
-
-func (t *task) doCloseActions() {
-	fmt.Printf("TBD: close actions to be performed now\n")
+func (t *task) doActions(phase string, actions []*action) {
+	reply := make(chan error)
+	for _, o := range actions {
+		t.actuations <- actuationRequest{
+			action: o,
+			reply:  reply,
+		}
+		err := <-reply
+		if err != nil {
+			log.Errorf("The '%s' action during '%s' event for task '%s' failed with error: %s", o.model.Action, phase, t.model.Uuid, err)
+		}
+	}
 }

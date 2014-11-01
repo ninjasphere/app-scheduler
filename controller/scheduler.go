@@ -3,7 +3,9 @@ package controller
 import (
 	"fmt"
 	"github.com/ninjasphere/app-scheduler/model"
+	"github.com/ninjasphere/go-ninja/api"
 	"github.com/ninjasphere/go-ninja/logger"
+	"time"
 )
 
 var log *logger.Logger = logger.GetLogger("")
@@ -18,13 +20,22 @@ type cancelRequest struct {
 	reply chan error
 }
 
+type actuationRequest struct {
+	action *action
+	reply  chan error
+}
+
 type Scheduler struct {
-	model    *model.Schedule
-	started  map[string]*task
-	stopped  chan struct{}
-	shutdown chan bool
-	tasks    chan startRequest
-	cancels  chan cancelRequest
+	conn        *ninja.Connection
+	thingClient *ninja.ServiceClient
+	timeout     time.Duration
+	model       *model.Schedule
+	started     map[string]*task
+	stopped     chan struct{}
+	shutdown    chan bool
+	tasks       chan startRequest
+	cancels     chan cancelRequest
+	actuations  chan actuationRequest
 }
 
 // The control loop of the scheduler. It is responsible for admitting
@@ -49,7 +60,7 @@ func (s *Scheduler) loop() {
 		case startReq := <-s.tasks:
 			taskId := startReq.model.Uuid
 			runner := &task{}
-			err := runner.init(startReq.model)
+			err := runner.init(startReq.model, s.actuations)
 			if err == nil {
 				s.started[taskId] = runner
 				go func() {
@@ -71,6 +82,10 @@ func (s *Scheduler) loop() {
 				err = fmt.Errorf("task id (%s) does not exist", cancelReq.id)
 			}
 			cancelReq.reply <- err
+
+		case actuationReq := <-s.actuations:
+			err := actuationReq.action.actuate(s.conn, s.thingClient, s.timeout)
+			actuationReq.reply <- err
 		}
 
 	}
@@ -86,6 +101,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	s.stopped = make(chan struct{})
 	s.tasks = make(chan startRequest)
 	s.cancels = make(chan cancelRequest)
+	s.actuations = make(chan actuationRequest)
 
 	go s.loop()
 
@@ -134,4 +150,10 @@ func (s *Scheduler) SetLogger(logger *logger.Logger) {
 	if logger != nil {
 		log = logger
 	}
+}
+
+func (s *Scheduler) SetConnection(conn *ninja.Connection, timeout time.Duration) {
+	s.conn = conn
+	s.timeout = timeout
+	s.thingClient = s.conn.GetServiceClient("$home/services/ThingModel")
 }

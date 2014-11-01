@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/ninjasphere/app-scheduler/controller"
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/go-ninja/api"
@@ -10,6 +9,7 @@ import (
 	nmodel "github.com/ninjasphere/go-ninja/model"
 	"github.com/ninjasphere/go-ninja/rpc"
 	"github.com/ninjasphere/go-ninja/support"
+	"time"
 )
 
 var (
@@ -32,6 +32,7 @@ func (a *SchedulerApp) Start(model *model.Schedule) error {
 	a.model = model
 	a.scheduler = &controller.Scheduler{}
 	a.scheduler.SetLogger(a.Log)
+	a.scheduler.SetConnection(a.Conn, time.Millisecond*time.Duration(config.Int(10000, "scheduler", "timeout")))
 	err := a.scheduler.Start(model)
 	if err == nil {
 		a.SendEvent("config", model)
