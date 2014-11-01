@@ -13,7 +13,7 @@ func assert(t *testing.T, description string, assertion func() bool) {
 
 func TestJSONRoundTrip(t *testing.T) {
 	item := &Task{
-		ID:        "u",
+		ID:          "u",
 		Description: "d",
 		Window: &Window{
 			From:  &Event{Rule: "time-of-day", Param: "10:00"},
