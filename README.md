@@ -62,7 +62,13 @@ The schedule is passed to the application on startup as its configuration object
 
 A command line utility, nscheduler, can be used to schedule and cancel individual tasks. For example, the task with the above definition would be generated with a nscheduler invocation that looked like this:
 
-	nscheduler --from time-of-day 19:00:00 --until delay 00:30:00 --on-open turnOn --on-close turnOff --thing ed9f4064 -- schedule
+	nscheduler \
+		   --from time-of-day 19:00:00 \
+		   --until delay 00:30:00 \
+		   --on-open turnOn \
+		   --on-close turnOff \
+		   --thing ed9f4064 \
+		   -- schedule
 
 For more details about the nscheduler command, run nscheduler without any arguments to read some help text.
 
@@ -82,4 +88,4 @@ The scheduler also listens on topics of the form:
 
 	$device/:deviceId/channel/user-agent
 
-for 'task-scheduled' and 'task-cancelled' events.
+for 'schedule-task' and 'cancel-task' events.
