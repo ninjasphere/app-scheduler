@@ -50,6 +50,7 @@ func (t *task) loop() {
 		// FIXME: if the window is not recurrent, then we need to check that it is still valid.
 
 		now := clock.Now()
+		scheduledAt := now
 
 		for {
 			if t.window.isPermanentlyClosed(now) {
@@ -58,11 +59,11 @@ func (t *task) loop() {
 				return
 			}
 
-			if t.window.isOpen(now) {
+			if t.window.isOpen(scheduledAt, now) {
 				break
 			} else {
 				var quit bool
-				quit, now = t.waitForOpenEvent(now)
+				quit, now = t.waitForOpenEvent(scheduledAt)
 				if quit {
 					return
 				}

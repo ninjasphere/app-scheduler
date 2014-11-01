@@ -42,7 +42,7 @@ func runNonOverlappingWindow(t *testing.T, m *model.Window, permanentlyClosed bo
 	if err != nil {
 		t.Fatalf("unexpected error while opening window: %v", err)
 	}
-	if stub.isOpen(testTime) {
+	if stub.isOpen(testTime, testTime) {
 		t.Fatalf("window should not be open now")
 	}
 	if permanentlyClosed != stub.isPermanentlyClosed(testTime) {
@@ -57,7 +57,7 @@ func runOverlappingWindow(t *testing.T, m *model.Window) {
 	if err != nil {
 		t.Fatalf("unexpected error while opening window: %v", err)
 	}
-	if !stub.isOpen(testTime) {
+	if !stub.isOpen(testTime, testTime) {
 		t.Fatalf("window should be open now")
 	}
 	if stub.isPermanentlyClosed(testTime) {

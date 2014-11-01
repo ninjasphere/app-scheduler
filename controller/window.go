@@ -48,7 +48,7 @@ func (w *window) isPermanentlyClosed(ref time.Time) bool {
 }
 
 // Answer true if the window is open with respect to the specified time.
-func (w *window) isOpen(ref time.Time) bool {
+func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 	openWaitsForTime := w.from.hasTimestamp()
 	closeWaitsForTime := w.until.hasTimestamp()
 
@@ -58,7 +58,7 @@ func (w *window) isOpen(ref time.Time) bool {
 		// that the reference timestamp is within the boundaries
 		// of those timestamp
 
-		openTimestamp := w.from.asTimestamp(ref)
+		openTimestamp := w.from.asTimestamp(scheduledAt)
 		closeTimestamp := w.until.asTimestamp(openTimestamp)
 
 		return openTimestamp.Sub(ref) <= 0 &&
@@ -76,7 +76,7 @@ func (w *window) isOpen(ref time.Time) bool {
 		// the reference time is in the window, only if
 		// it is less than the close event
 
-		closeTimestamp := w.until.asTimestamp(ref)
+		closeTimestamp := w.until.asTimestamp(scheduledAt)
 		return ref.Sub(closeTimestamp) < 0
 	}
 
@@ -84,7 +84,7 @@ func (w *window) isOpen(ref time.Time) bool {
 	// we are in the window, only if reference
 	// timestamp is greater than the open timestamp
 
-	openTimestamp := w.until.asTimestamp(ref)
+	openTimestamp := w.from.asTimestamp(scheduledAt)
 	return ref.Sub(openTimestamp) >= 0
 }
 
