@@ -4,7 +4,7 @@ all:
 dist:
 	scripts/dist.sh
 
-qa: test vet fmt lint
+qa: vet fmt lint test
 
 lint:
 	go get github.com/golang/lint/golint
