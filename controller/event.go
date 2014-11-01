@@ -9,6 +9,10 @@ import (
 	"github.com/ninjasphere/app-scheduler/model"
 )
 
+//Event objects know how to wait for some kind of event to occur. Most time-based
+//events can answer the timestamp when they are next expected to occur, relative to a
+//specified reference time. Some events are recurring, some are not. Non-recurring events
+//may be final.
 type Event interface {
 	String() string                      // A description of the event.
 	hasTimestamp() bool                  // Time based events have timestamps, other types of events do not

@@ -5,7 +5,7 @@ package model
 // A ThingAction does something to a single thing.
 type ThingAction struct {
 	ActionType string `json:"type,omitempty"`
-	ThingId    string `json:"thing-id,omitempty"`
+	ThingID    string `json:"thingID,omitempty"`
 	Action     string `json:"action,omitempty"`
 }
 
@@ -48,7 +48,7 @@ type Window struct {
 // A Task waits until the From event occurs (unless it has already occurred) then performs the Open actions, waits for the Until event to occur
 // then runs the Close actions. If the Window is a recurring window, then the cycle repeats, otherwise the Task ends.
 type Task struct {
-	Uuid        string         `json:"uuid,omitempty"`
+	ID          string         `json:"id,omitempty"`
 	Description string         `json:"description,omitempty"`
 	Window      *Window        `json:"window,omitempty"`
 	Open        []*ThingAction `json:"open,omitempty"`

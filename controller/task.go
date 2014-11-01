@@ -25,18 +25,16 @@ func (t *task) init(m *model.Task, actuations chan actuationRequest) error {
 	t.openers = make([]*action, 0, 0)
 	t.closers = make([]*action, 0, 0)
 	for _, a := range m.Open {
-		if actor, err := newAction(a); err != nil {
-			return err
-		} else {
+		if actor, err := newAction(a); err == nil {
 			t.openers = append(t.openers, actor)
 		}
+		return err
 	}
 	for _, a := range m.Close {
-		if actor, err := newAction(a); err != nil {
-			return err
-		} else {
+		if actor, err := newAction(a); err == nil {
 			t.closers = append(t.closers, actor)
 		}
+		return err
 	}
 
 	t.quit = make(chan struct{}, 1)
@@ -53,7 +51,7 @@ func (t *task) loop() {
 		now := clock.Now()
 
 		if t.window.isPermanentlyClosed(now) {
-			log.Debugf("at '%v' the window '%v' for task '%s' became permanently closed. the task will exit.", now, t.window, t.model.Uuid)
+			log.Debugf("at '%v' the window '%v' for task '%s' became permanently closed. the task will exit.", now, t.window, t.model.ID)
 			// stop running when we can run no more
 			return
 		}
@@ -117,7 +115,7 @@ func (t *task) doActions(phase string, actions []*action) {
 		}
 		err := <-reply
 		if err != nil {
-			log.Errorf("The '%s' action during '%s' event for task '%s' failed with error: %s", o.model.Action, phase, t.model.Uuid, err)
+			log.Errorf("The '%s' action during '%s' event for task '%s' failed with error: %s", o.model.Action, phase, t.model.ID, err)
 		}
 	}
 }

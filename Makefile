@@ -8,7 +8,7 @@ qa: test vet fmt lint
 
 lint:
 	go get github.com/golang/lint/golint
-	$(GOPATH)/bin/golint
+	$(GOPATH)/bin/golint ./...
 
 fmt:
 	gofmt -s -w . model controller

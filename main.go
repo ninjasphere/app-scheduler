@@ -54,7 +54,7 @@ func (a *SchedulerApp) Stop() error {
 // Schedule a new task or re-schedules an existing task.
 func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 	if a.scheduler != nil {
-		err := a.Cancel(task.Uuid)
+		err := a.Cancel(task.ID)
 		if err != nil {
 			a.Log.Warningf("cancel failed %s", err)
 		}
@@ -63,7 +63,7 @@ func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 			a.model.Tasks = append(a.model.Tasks, task)
 			a.SendEvent("config", a.model)
 		}
-		copy := task.Uuid
+		copy := task.ID
 		return &copy, err
 	}
 	return nil, fmt.Errorf("cannot schedule a task while the scheduler is stopped")
@@ -75,7 +75,7 @@ func (a *SchedulerApp) Cancel(taskID string) error {
 		var err error
 		found := -1
 		for i, t := range a.model.Tasks {
-			if t.Uuid == taskID {
+			if t.ID == taskID {
 				found = i
 				break
 			}

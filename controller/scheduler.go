@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var log *logger.Logger = logger.GetLogger("")
+var log = logger.GetLogger("")
 
 type startRequest struct {
 	model *model.Task
@@ -25,6 +25,7 @@ type actuationRequest struct {
 	reply  chan error
 }
 
+// Scheduler is a controller that coordinates the execution of the tasks specified by a model schedule.
 type Scheduler struct {
 	conn        *ninja.Connection
 	thingClient *ninja.ServiceClient
@@ -48,29 +49,29 @@ func (s *Scheduler) loop() {
 	for !quit || len(s.started) > 0 {
 		select {
 		case quit = <-s.shutdown:
-			for taskId, t := range s.started {
-				log.Debugf("signaled %s", taskId)
+			for taskID, t := range s.started {
+				log.Debugf("signaled %s", taskID)
 				t.quit <- struct{}{}
 			}
 
-		case taskId := <-reap:
-			log.Debugf("reaped %s", taskId)
-			delete(s.started, taskId)
+		case taskID := <-reap:
+			log.Debugf("reaped %s", taskID)
+			delete(s.started, taskID)
 
 		case startReq := <-s.tasks:
-			taskId := startReq.model.Uuid
+			taskID := startReq.model.ID
 			runner := &task{}
 			err := runner.init(startReq.model, s.actuations)
 			if err == nil {
-				s.started[taskId] = runner
+				s.started[taskID] = runner
 				go func() {
 					defer func() {
-						log.Debugf("exiting %s", taskId)
-						reap <- taskId
+						log.Debugf("exiting %s", taskID)
+						reap <- taskID
 					}()
 					runner.loop()
 				}()
-				log.Debugf("started %s", taskId)
+				log.Debugf("started %s", taskID)
 			}
 			startReq.reply <- err
 
@@ -94,6 +95,7 @@ func (s *Scheduler) loop() {
 
 }
 
+// Start the scheduler. Iterate over the model schedule, creating and starting tasks for each Task model found.
 func (s *Scheduler) Start(m *model.Schedule) error {
 	s.model = m
 	s.shutdown = make(chan bool)
@@ -105,7 +107,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 
 	go s.loop()
 
-	errors := make([]error, 0)
+	var errors []error
 
 	for _, t := range m.Tasks {
 		reply := make(chan error)
@@ -125,6 +127,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	}
 }
 
+// Stop the scheduler.
 func (s *Scheduler) Stop() error {
 	s.shutdown <- true
 	close(s.shutdown)
@@ -132,6 +135,7 @@ func (s *Scheduler) Stop() error {
 	return nil
 }
 
+// Schedule the specified task. Starts a task controller for the specified task model.
 func (s *Scheduler) Schedule(m *model.Task) error {
 	reply := make(chan error)
 	s.tasks <- startRequest{m, reply}
@@ -139,19 +143,23 @@ func (s *Scheduler) Schedule(m *model.Task) error {
 	return err
 }
 
-func (s *Scheduler) Cancel(taskId string) error {
+// Cancel the specified task. Stops the task controller for the specified task.
+func (s *Scheduler) Cancel(taskID string) error {
 	reply := make(chan error)
-	s.cancels <- cancelRequest{taskId, reply}
+	s.cancels <- cancelRequest{taskID, reply}
 	err := <-reply
 	return err
 }
 
+// SetLogger sets the logger to be used by the scheduler component.
 func (s *Scheduler) SetLogger(logger *logger.Logger) {
 	if logger != nil {
 		log = logger
 	}
 }
 
+// SetConnection configure's the scheduler's connection and the default timeout
+// for requests sent on the connection.
 func (s *Scheduler) SetConnection(conn *ninja.Connection, timeout time.Duration) {
 	s.conn = conn
 	s.timeout = timeout

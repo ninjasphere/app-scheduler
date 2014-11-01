@@ -36,19 +36,15 @@ func (w *window) isPermanentlyClosed(ref time.Time) bool {
 		if w.from.hasEventOccurred(ref, ref) {
 			if w.from.hasFinalEventOccurred(openTimestamp) {
 				return w.until.hasEventOccurred(openTimestamp, ref)
-			} else {
-				return w.until.hasFinalEventOccurred(ref)
 			}
-		} else {
-			return w.until.hasFinalEventOccurred(ref)
 		}
+		return w.until.hasFinalEventOccurred(ref)
 	} else if !w.until.hasTimestamp() && !w.from.hasTimestamp() {
 		return false
 	} else if w.until.hasTimestamp() {
 		return w.until.hasFinalEventOccurred(ref)
-	} else { //if w.from.hasTimestamp() {
-		return w.from.hasFinalEventOccurred(ref)
 	}
+	return w.from.hasFinalEventOccurred(ref)
 }
 
 // Answer true if the window is open with respect to the specified time.
@@ -82,15 +78,14 @@ func (w *window) isOpen(ref time.Time) bool {
 
 		closeTimestamp := w.until.asTimestamp(ref)
 		return ref.Sub(closeTimestamp) < 0
-	} else { // if openWaitsForTime
-
-		// when only the open event is timestamp basedd
-		// we are in the window, only if reference
-		// timestamp is greater than the open timestamp
-
-		openTimestamp := w.until.asTimestamp(ref)
-		return ref.Sub(openTimestamp) >= 0
 	}
+
+	// when only the open event is timestamp basedd
+	// we are in the window, only if reference
+	// timestamp is greater than the open timestamp
+
+	openTimestamp := w.until.asTimestamp(ref)
+	return ref.Sub(openTimestamp) >= 0
 }
 
 // Answer a channel that will receive an event when the next open event occurs.

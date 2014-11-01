@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Clock provides an alternative interface to the system clock. Used to allow testing of time related functions.
 type Clock interface {
 	Now() time.Time
 	AfterFunc(delay time.Duration, then func())

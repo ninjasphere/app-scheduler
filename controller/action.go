@@ -15,13 +15,13 @@ type action struct {
 func (a *action) actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error {
 	// acquire the model
 	thing := &nmodel.Thing{}
-	if err := client.Call("fetch", a.model.ThingId, thing, timeout); err != nil {
+	if err := client.Call("fetch", a.model.ThingID, thing, timeout); err != nil {
 		return err
 	}
 
 	// iterate across all channels
 	if thing.Device == nil || thing.Device.Channels == nil {
-		return fmt.Errorf("'%s' does not have any channels", a.model.ThingId)
+		return fmt.Errorf("'%s' does not have any channels", a.model.ThingID)
 	}
 
 	// acquire matching topics
@@ -39,7 +39,7 @@ func (a *action) actuate(conn *ninja.Connection, client *ninja.ServiceClient, ti
 	}
 
 	if len(topics) == 0 {
-		return fmt.Errorf("no topics supporting the '%s' method were found on '%s'", a.model.Action, a.model.ThingId)
+		return fmt.Errorf("no topics supporting the '%s' method were found on '%s'", a.model.Action, a.model.ThingID)
 	}
 
 	errors := make([]error, 0, 0)
