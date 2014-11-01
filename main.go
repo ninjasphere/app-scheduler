@@ -24,6 +24,22 @@ type SchedulerApp struct {
 	service   *rpc.ExportedService
 }
 
+//SchedulerService is a facade used to prevent the app event handler being replaced
+//by the service event handler.
+type SchedulerService struct {
+	app *SchedulerApp
+}
+
+//Schedule delegates to the Schedule of SchedulerApp
+func (a *SchedulerService) Schedule(task *model.Task) (*string, error) {
+	return a.app.Schedule(task)
+}
+
+//Cancel delegates to the Cancel method of SchedulerApp
+func (a *SchedulerService) Cancel(taskID string) error {
+	return a.app.Cancel(taskID)
+}
+
 // Start is called after the ExportApp call is complete.
 func (a *SchedulerApp) Start(model *model.Schedule) error {
 	if a.scheduler != nil {
@@ -111,7 +127,7 @@ func main() {
 		Schema: "http://schema.ninjablocks.com/service/scheduler",
 	}
 
-	app.service, err = app.Conn.ExportService(app, topic, announcement)
+	app.service, err = app.Conn.ExportService(&SchedulerService{app: app}, topic, announcement)
 	if err != nil {
 		app.Log.Fatalf("failed to export scheduler service: %v", err)
 	}
