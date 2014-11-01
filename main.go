@@ -6,6 +6,9 @@ import (
 	"github.com/ninjasphere/app-scheduler/controller"
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/go-ninja/api"
+	"github.com/ninjasphere/go-ninja/config"
+	nmodel "github.com/ninjasphere/go-ninja/model"
+	"github.com/ninjasphere/go-ninja/rpc"
 	"github.com/ninjasphere/go-ninja/support"
 )
 
@@ -17,6 +20,7 @@ type SchedulerApp struct {
 	support.AppSupport
 	scheduler *controller.Scheduler
 	model     *model.Schedule
+	service   *rpc.ExportedService
 }
 
 func (a *SchedulerApp) Start(model *model.Schedule) error {
@@ -97,6 +101,17 @@ func main() {
 	if err != nil {
 		app.Log.Fatalf("failed to export app: %v", err)
 	}
+
+	topic := fmt.Sprintf("$node/%s/app/%s/service/%s", config.Serial(), app.Info.ID, "scheduler")
+	announcement := &nmodel.ServiceAnnouncement{
+		Schema: "http://schema.ninjablocks.com/service/scheduler",
+	}
+
+	service, err := app.Conn.ExportService(app, topic, announcement)
+	if err != nil {
+		app.Log.Fatalf("failed to export scheduler service: %v", err)
+	}
+	_ = service
 
 	support.WaitUntilSignal()
 }
