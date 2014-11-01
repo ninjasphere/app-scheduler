@@ -6,6 +6,7 @@ import (
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/go-ninja/api"
 	"github.com/ninjasphere/go-ninja/config"
+	"github.com/ninjasphere/go-ninja/logger"
 	nmodel "github.com/ninjasphere/go-ninja/model"
 	"github.com/ninjasphere/go-ninja/rpc"
 	"github.com/ninjasphere/go-ninja/support"
@@ -19,65 +20,77 @@ var (
 //SchedulerApp describes the scheduler application.
 type SchedulerApp struct {
 	support.AppSupport
-	scheduler *controller.Scheduler
-	model     *model.Schedule
-	service   *rpc.ExportedService
-}
-
-//SchedulerService is a facade used to prevent the app event handler being replaced
-//by the service event handler.
-type SchedulerService struct {
-	app *SchedulerApp
-}
-
-//Schedule delegates to the Schedule of SchedulerApp
-func (a *SchedulerService) Schedule(task *model.Task) (*string, error) {
-	return a.app.Schedule(task)
-}
-
-//Cancel delegates to the Cancel method of SchedulerApp
-func (a *SchedulerService) Cancel(taskID string) error {
-	return a.app.Cancel(taskID)
+	service *SchedulerService
 }
 
 // Start is called after the ExportApp call is complete.
-func (a *SchedulerApp) Start(model *model.Schedule) error {
-	if a.scheduler != nil {
+func (a *SchedulerApp) Start(m *model.Schedule) error {
+	if a.service != nil {
 		return fmt.Errorf("illegal state: scheduler is already running")
 	}
-	a.model = model
-	a.scheduler = &controller.Scheduler{}
-	a.scheduler.SetLogger(a.Log)
-	a.scheduler.SetConnection(a.Conn, time.Millisecond*time.Duration(config.Int(10000, "scheduler", "timeout")))
-	err := a.scheduler.Start(model)
-	if err == nil {
-		a.SendEvent("config", model)
+	a.service = &SchedulerService{
+		log:   a.Log,
+		conn:  a.Conn,
+		model: m,
+		configStore: func(m *model.Schedule) {
+			a.SendEvent("config", m)
+		},
 	}
+	err := a.service.init(a.Info.ID)
 	return err
 }
 
 // Stop the scheduler module.
 func (a *SchedulerApp) Stop() error {
 	var err error
-	if a.scheduler != nil {
-		tmp := a.scheduler
-		a.scheduler = nil
-		err = tmp.Stop()
+	if a.service != nil {
+		tmp := a.service
+		a.service = nil
+		err = tmp.scheduler.Stop()
 	}
 	return err
 }
 
+//SchedulerService is a facade used to prevent the app event handler being replaced
+//by the service event handler.
+type SchedulerService struct {
+	scheduler   *controller.Scheduler
+	log         *logger.Logger
+	conn        *ninja.Connection
+	model       *model.Schedule
+	service     *rpc.ExportedService
+	configStore func(m *model.Schedule)
+}
+
+func (s *SchedulerService) init(moduleID string) error {
+	s.scheduler = &controller.Scheduler{}
+	s.scheduler.SetLogger(s.log)
+	s.scheduler.SetConnection(s.conn, time.Millisecond*time.Duration(config.Int(10000, "scheduler", "timeout")))
+	if err := s.scheduler.Start(s.model); err != nil {
+		return err
+	}
+	var err error
+	topic := fmt.Sprintf("$node/%s/app/%s/service/%s", config.Serial(), moduleID, "scheduler")
+	announcement := &nmodel.ServiceAnnouncement{
+		Schema: "http://schema.ninjablocks.com/service/scheduler",
+	}
+	if s.service, err = s.conn.ExportService(s, topic, announcement); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Schedule a new task or re-schedules an existing task.
-func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
-	if a.scheduler != nil {
-		err := a.Cancel(task.ID)
+func (s *SchedulerService) Schedule(task *model.Task) (*string, error) {
+	if s.scheduler != nil {
+		err := s.Cancel(task.ID)
 		if err != nil {
-			a.Log.Warningf("cancel failed %s", err)
+			s.log.Warningf("cancel failed %s", err)
 		}
-		err = a.scheduler.Schedule(task)
+		err = s.scheduler.Schedule(task)
 		if err == nil {
-			a.model.Tasks = append(a.model.Tasks, task)
-			a.SendEvent("config", a.model)
+			s.model.Tasks = append(s.model.Tasks, task)
+			s.configStore(s.model)
 		}
 		copy := task.ID
 		return &copy, err
@@ -86,21 +99,21 @@ func (a *SchedulerApp) Schedule(task *model.Task) (*string, error) {
 }
 
 // Cancel an existing task.
-func (a *SchedulerApp) Cancel(taskID string) error {
-	if a.scheduler != nil {
+func (s *SchedulerService) Cancel(taskID string) error {
+	if s.scheduler != nil {
 		var err error
 		found := -1
-		for i, t := range a.model.Tasks {
+		for i, t := range s.model.Tasks {
 			if t.ID == taskID {
 				found = i
 				break
 			}
 		}
 		if found > -1 {
-			err = a.scheduler.Cancel(taskID)
+			err = s.scheduler.Cancel(taskID)
 			if err == nil {
-				a.model.Tasks = append(a.model.Tasks[0:found], a.model.Tasks[found+1:]...)
-				a.SendEvent("config", a.model)
+				s.model.Tasks = append(s.model.Tasks[0:found], s.model.Tasks[found+1:]...)
+				s.configStore(s.model)
 			}
 		} else {
 			err = nil
@@ -120,16 +133,6 @@ func main() {
 	err = app.Export(app)
 	if err != nil {
 		app.Log.Fatalf("failed to export app: %v", err)
-	}
-
-	topic := fmt.Sprintf("$node/%s/app/%s/service/%s", config.Serial(), app.Info.ID, "scheduler")
-	announcement := &nmodel.ServiceAnnouncement{
-		Schema: "http://schema.ninjablocks.com/service/scheduler",
-	}
-
-	app.service, err = app.Conn.ExportService(&SchedulerService{app: app}, topic, announcement)
-	if err != nil {
-		app.Log.Fatalf("failed to export scheduler service: %v", err)
 	}
 
 	support.WaitUntilSignal()
