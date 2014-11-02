@@ -112,35 +112,31 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			return result, nil
 		}
 	case "sunset":
-		parsed, err = time.Parse("15:04:05", "18:00:00")
-		if err == nil {
-			result := &sunset{
-				timeOfDay: timeOfDay{
-					timeEvent: timeEvent{
-						model:  m,
-						parsed: &parsed,
-					},
-					closeEvent: closeEvent,
+		parsed = clock.Sunset(clock.Now())
+		result := &sunset{
+			timeOfDay: timeOfDay{
+				timeEvent: timeEvent{
+					model:  m,
+					parsed: &parsed,
 				},
-			}
-			result.timeEvent.polyAsTimestamp = result.asTimestamp
-			return result, nil
+				closeEvent: closeEvent,
+			},
 		}
+		result.timeEvent.polyAsTimestamp = result.asTimestamp
+		return result, nil
 	case "sunrise":
-		parsed, err = time.Parse("15:04:05", "06:00:00")
-		if err == nil {
-			result := &sunrise{
-				timeOfDay: timeOfDay{
-					timeEvent: timeEvent{
-						model:  m,
-						parsed: &parsed,
-					},
-					closeEvent: closeEvent,
+		parsed = clock.Sunrise(clock.Now())
+		result := &sunrise{
+			timeOfDay: timeOfDay{
+				timeEvent: timeEvent{
+					model:  m,
+					parsed: &parsed,
 				},
-			}
-			result.timeEvent.polyAsTimestamp = result.asTimestamp
-			return result, nil
+				closeEvent: closeEvent,
+			},
 		}
+		result.timeEvent.polyAsTimestamp = result.asTimestamp
+		return result, nil
 	default:
 		json, _ := json.Marshal(m)
 		return nil, fmt.Errorf("bad time specification: '%s'", json)
@@ -225,13 +221,12 @@ func (t *delay) asTimestamp(ref time.Time) time.Time {
 
 // Answer the time of the next sunset in the current location.
 func (t *sunset) asTimestamp(ref time.Time) time.Time {
-	return t.timeOfDay.asTimestamp(ref)
+	return clock.Sunset(ref)
 }
 
 // Answer the time of the next sunrise in the current location.
 func (t *sunrise) asTimestamp(ref time.Time) time.Time {
-	//FIXME: use location data, if available, to calculate sunrise
-	return t.timeOfDay.asTimestamp(ref)
+	return clock.Sunrise(ref)
 }
 
 func dump(e Event, ref time.Time) string {

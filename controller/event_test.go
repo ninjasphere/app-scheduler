@@ -137,8 +137,8 @@ func TestOpenSunsetAfterNow(t *testing.T) {
 func TestCloseSunsetAfterNow(t *testing.T) {
 	runAfterNow(t, sunsetModel, true, false)
 }
-func TestOpenSunriseBeforeNow(t *testing.T) {
-	runBeforeNow(t, sunriseModel, false, true)
+func TestOpenSunriseAfterNow(t *testing.T) {
+	runAfterNow(t, sunriseModel, false, false)
 }
 func TestCloseSunriseAfterNow(t *testing.T) {
 	runAfterNow(t, sunriseModel, true, false)
