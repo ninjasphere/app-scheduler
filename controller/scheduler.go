@@ -105,6 +105,21 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	s.cancels = make(chan cancelRequest)
 	s.actuations = make(chan actuationRequest)
 
+	var loc *time.Location
+	var err error
+	// set the timezone of the clock
+	if loc, err = time.LoadLocation(s.model.TimeZone); err != nil {
+		loc, _ = time.LoadLocation("Local")
+		s.model.TimeZone = "Local"
+	}
+	clock.ResetCoordinates()
+	clock.SetLocation(loc)
+
+	// set the coordinates of the clock
+	if s.model.Location != nil {
+		clock.SetCoordinates(s.model.Location.Latitude, s.model.Location.Longtitude, s.model.Location.Altitude)
+	}
+
 	go s.loop()
 
 	var errors []error

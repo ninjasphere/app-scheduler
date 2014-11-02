@@ -69,6 +69,7 @@ func (s *SchedulerService) init(moduleID string) error {
 	if err := s.scheduler.Start(s.model); err != nil {
 		return err
 	}
+
 	var err error
 	topic := fmt.Sprintf("$node/%s/app/%s/service/%s", config.Serial(), moduleID, "scheduler")
 	announcement := &nmodel.ServiceAnnouncement{
@@ -77,6 +78,7 @@ func (s *SchedulerService) init(moduleID string) error {
 	if s.service, err = s.conn.ExportService(s, topic, announcement); err != nil {
 		return err
 	}
+	s.configStore(s.model)
 	return nil
 }
 
