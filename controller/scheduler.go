@@ -145,7 +145,6 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 // Stop the scheduler.
 func (s *Scheduler) Stop() error {
 	s.shutdown <- true
-	close(s.shutdown)
 	<-s.stopped
 	return nil
 }
