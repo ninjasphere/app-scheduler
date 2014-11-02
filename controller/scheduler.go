@@ -109,6 +109,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	var err error
 	// set the timezone of the clock
 	if loc, err = time.LoadLocation(s.model.TimeZone); err != nil {
+		log.Warningf("error while setting timezone (%s): %s", s.model.TimeZone, err)
 		loc, _ = time.LoadLocation("Local")
 		s.model.TimeZone = "Local"
 	}
