@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/cpucycle/astrotime"
 	"time"
 )
 
@@ -52,27 +53,25 @@ func (clk *systemclock) SetLocation(l *time.Location) {
 }
 
 func (clk *systemclock) Sunset(ref time.Time) time.Time {
-	if true || !clk.useCoordinates {
+	if !clk.useCoordinates {
 		sunset := time.Date(ref.Year(), ref.Month(), ref.Day(), 18, 0, 0, 0, ref.Location())
 		if sunset.Sub(ref) < 0 {
 			sunset = sunset.AddDate(0, 0, 1)
 		}
 		return sunset
 	}
-	// FIXME: support use of the coordinates
-	return ref
+	return astrotime.NextSunset(ref, clk.latitude, clk.longtitude)
 }
 
 func (clk *systemclock) Sunrise(ref time.Time) time.Time {
-	if true || !clk.useCoordinates {
+	if !clk.useCoordinates {
 		sunrise := time.Date(ref.Year(), ref.Month(), ref.Day(), 6, 0, 0, 0, ref.Location())
 		if sunrise.Sub(ref) < 0 {
 			sunrise = sunrise.AddDate(0, 0, 1)
 		}
 		return sunrise
 	}
-	// FIXME: support use of the coordinates
-	return ref
+	return astrotime.NextSunrise(ref, clk.latitude, clk.longtitude)
 }
 
 func (clk *systemclock) SetCoordinates(latitude float64, longtitude float64, altitude float64) {
