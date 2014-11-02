@@ -5,6 +5,7 @@ import (
 )
 
 type mockclock struct {
+	systemclock
 	now       time.Time
 	callbacks map[time.Time][]callback
 }
