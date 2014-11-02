@@ -87,3 +87,33 @@ func (s *SchedulerService) Cancel(taskID string) error {
 	}
 	return fmt.Errorf("cannot cancel a task while the scheduler is stopped")
 }
+
+// SetTimeZone sets the scheduler timezone. The scheduler will be restarted.
+func (s *SchedulerService) SetTimeZone(timezone string) error {
+	if s.scheduler != nil {
+		if err := s.scheduler.Stop(); err != nil {
+			return err
+		}
+		s.model.TimeZone = timezone
+		if err := s.scheduler.Start(s.model); err != nil {
+			return err
+		}
+		s.configStore(s.model)
+	}
+	return nil
+}
+
+// SetCoordinates set the location coordinates of the schedule. The scheduler will be restarted.
+func (s *SchedulerService) SetCoordinates(coordinates *model.Location) error {
+	if s.scheduler != nil {
+		if err := s.scheduler.Stop(); err != nil {
+			return err
+		}
+		s.model.Location = coordinates
+		if err := s.scheduler.Start(s.model); err != nil {
+			return err
+		}
+		s.configStore(s.model)
+	}
+	return nil
+}
