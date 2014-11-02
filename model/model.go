@@ -2,8 +2,8 @@
 // of schedule windows.
 package model
 
-// A ThingAction does something to a single thing.
-type ThingAction struct {
+// A Action does something to a single thing.
+type Action struct {
 	ActionType string `json:"type,omitempty"`
 	ThingID    string `json:"thingID,omitempty"`
 	Action     string `json:"action,omitempty"`
@@ -48,11 +48,11 @@ type Window struct {
 // A Task waits until the From event occurs (unless it has already occurred) then performs the Open actions, waits for the Until event to occur
 // then runs the Close actions. If the Window is a recurring window, then the cycle repeats, otherwise the Task ends.
 type Task struct {
-	ID          string         `json:"id,omitempty"`
-	Description string         `json:"description,omitempty"`
-	Window      *Window        `json:"window,omitempty"`
-	Open        []*ThingAction `json:"open,omitempty"`
-	Close       []*ThingAction `json:"close,omitempty"`
+	ID          string    `json:"id,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Window      *Window   `json:"window,omitempty"`
+	Open        []*Action `json:"open,omitempty"`
+	Close       []*Action `json:"close,omitempty"`
 }
 
 // A Schedule specifies a list of Tasks.

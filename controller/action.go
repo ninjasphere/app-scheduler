@@ -9,7 +9,7 @@ import (
 )
 
 type action struct {
-	model *model.ThingAction
+	model *model.Action
 }
 
 func (a *action) actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error {
@@ -65,7 +65,7 @@ func (a *action) actuate(conn *ninja.Connection, client *ninja.ServiceClient, ti
 	return nil
 }
 
-func newAction(m *model.ThingAction) (*action, error) {
+func newAction(m *model.Action) (*action, error) {
 	var a *action
 
 	switch m.ActionType {

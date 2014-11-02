@@ -121,26 +121,26 @@ var (
 	taskWithEarlierTimeOfDayOpenDelayCloseWindow = &model.Task{
 		ID:     "task",
 		Window: earlierTimeOfDayOpenDelayCloseWindow,
-		Open: []*model.ThingAction{
+		Open: []*model.Action{
 			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
 				ThingID:    "some-thing",
 			},
 		},
-		Close: []*model.ThingAction{},
+		Close: []*model.Action{},
 	}
 	taskWithEarlierTimestampOpenDelayCloseWindow = &model.Task{
 		ID:     "task",
 		Window: earlierTimestampOpenDelayCloseWindow,
-		Open: []*model.ThingAction{
+		Open: []*model.Action{
 			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
 				ThingID:    "some-thing",
 			},
 		},
-		Close: []*model.ThingAction{},
+		Close: []*model.Action{},
 	}
 	windowWithTwoDelayEvents = &model.Window{
 		From:  oneMinuteDelay,
@@ -149,13 +149,13 @@ var (
 	taskWithTwoDelayEvents = &model.Task{
 		ID:     "task",
 		Window: windowWithTwoDelayEvents,
-		Open: []*model.ThingAction{
+		Open: []*model.Action{
 			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
 				ThingID:    "some-thing",
 			},
 		},
-		Close: []*model.ThingAction{},
+		Close: []*model.Action{},
 	}
 )

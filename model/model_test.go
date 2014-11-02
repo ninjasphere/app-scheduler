@@ -19,14 +19,14 @@ func TestJSONRoundTrip(t *testing.T) {
 			From:  &Event{Rule: "time-of-day", Param: "10:00"},
 			Until: &Event{Rule: "time-of-day", Param: "12:00"},
 		},
-		Open: []*ThingAction{
+		Open: []*Action{
 			{
 				ActionType: "thing-action",
 				ThingID:    "thing-id",
 				Action:     "on",
 			},
 		},
-		Close: []*ThingAction{
+		Close: []*Action{
 			{
 				ActionType: "thing-action",
 				ThingID:    "thing-id",
