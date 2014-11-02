@@ -55,8 +55,17 @@ type Task struct {
 	Close       []*Action `json:"close,omitempty"`
 }
 
-// A Schedule specifies a list of Tasks.
+// A Location describes a particular geographical location. Used as input to resolution of "sunrise" and "sunset" event rules.
+type Location struct {
+	Latitude   float64 `json:"latitude"`
+	Longtitude float64 `json:"longtitude"`
+	Altitude   float64 `json:"altitude,omitempty"`
+}
+
+// A Schedule specifies a list of Tasks, a Location and a TimeZone
 type Schedule struct {
-	Version string  `json:"version,omitempty"`
-	Tasks   []*Task `json:"schedule,omitempty"`
+	Version  string    `json:"version,omitempty"`
+	TimeZone string    `json:"timezone"` // used during resolution of 'time-of-day' and 'timestamp' rules
+	Location *Location `json:"location,omitempty"`
+	Tasks    []*Task   `json:"schedule,omitempty"`
 }
