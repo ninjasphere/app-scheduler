@@ -13,22 +13,22 @@ func TestBadInitNil(t *testing.T) {
 	}
 }
 
-func TestBadInitFromNil(t *testing.T) {
+func TestBadInitAfterNil(t *testing.T) {
 	stub := &window{}
 	err := stub.init(&model.Window{
-		From:  nil,
-		Until: afterNowTimestampModel,
+		After:  nil,
+		Before: afterNowTimestampModel,
 	})
 	if err == nil {
 		t.Fatalf("expected error on init.from == nil")
 	}
 }
 
-func TestBadInitUntilNil(t *testing.T) {
+func TestBadInitBeforeNil(t *testing.T) {
 	stub := &window{}
 	err := stub.init(&model.Window{
-		Until: nil,
-		From:  afterNowTimestampModel,
+		Before: nil,
+		After:  afterNowTimestampModel,
 	})
 	if err == nil {
 		t.Fatalf("expected error on init.until == nil")
@@ -104,4 +104,3 @@ func TestLaterTimestampOpenDelayCloseWindowIsNotOpen(t *testing.T) {
 func TestSunriseSunsetWindow(t *testing.T) {
 	runNonOverlappingWindow(t, sunriseSunsetWindow, false)
 }
-

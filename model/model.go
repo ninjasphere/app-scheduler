@@ -19,8 +19,8 @@ type Action struct {
 // time-of-day - specifies a clock time between 00:00:00 and 23:59:59
 //
 // delay - specifies an event that occurs HH:MM:SS after the start of the scheduler
-// or the last Until event (if this is a 'From' event) or the last From event (if this is an
-// 'Until' event).
+// or the last Before event (if this is a 'After' event) or the last After event (if this is an
+// 'Before' event).
 //
 // sunrise - specifies an event that occurs at the local sunrise
 //
@@ -38,14 +38,14 @@ type Event struct {
 }
 
 // A Window describes a period of time during which a Scheduler Task runs.
-// The From event specifies when the Window starts (usually a time of day). The Until event
+// The After event specifies when the Window starts (usually a time of day). The Before event
 // specifies when the Window closes (usually another time of day or a delay).
 type Window struct {
-	From  *Event `json:"from,omitempty"`
-	Until *Event `json:"until,omitempty"`
+	After  *Event `json:"after,omitempty"`
+	Before *Event `json:"before,omitempty"`
 }
 
-// A Task waits until the From event occurs (unless it has already occurred) then performs the Open actions, waits for the Until event to occur
+// A Task waits until the After event occurs (unless it has already occurred) then performs the Open actions, waits for the Before event to occur
 // then runs the Close actions. If the Window is a recurring window, then the cycle repeats, otherwise the Task ends.
 type Task struct {
 	ID          string    `json:"id,omitempty"`

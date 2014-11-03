@@ -16,8 +16,8 @@ func TestJSONRoundTrip(t *testing.T) {
 		ID:          "u",
 		Description: "d",
 		Window: &Window{
-			From:  &Event{Rule: "time-of-day", Param: "10:00"},
-			Until: &Event{Rule: "time-of-day", Param: "12:00"},
+			After:  &Event{Rule: "time-of-day", Param: "10:00"},
+			Before: &Event{Rule: "time-of-day", Param: "12:00"},
 		},
 		Open: []*Action{
 			{

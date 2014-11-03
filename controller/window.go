@@ -8,8 +8,8 @@ import (
 )
 
 type window struct {
-	from  Event
-	until Event
+	after  Event
+	before Event
 }
 
 func (w *window) init(m *model.Window) error {
@@ -17,9 +17,9 @@ func (w *window) init(m *model.Window) error {
 	if m == nil {
 		return fmt.Errorf("illegal argument: m == nil")
 	}
-	w.from, err = newEvent(m.From, false)
+	w.after, err = newEvent(m.After, false)
 	if err == nil {
-		w.until, err = newEvent(m.Until, true)
+		w.before, err = newEvent(m.Before, true)
 	}
 	return err
 }
@@ -31,26 +31,26 @@ func (w *window) init(m *model.Window) error {
 // event has not yet occurred or itself recurring
 func (w *window) isPermanentlyClosed(ref time.Time) bool {
 
-	if w.until.hasTimestamp() && w.from.hasTimestamp() {
-		openTimestamp := w.from.asTimestamp(ref)
-		if w.from.hasEventOccurred(ref, ref) {
-			if w.from.hasFinalEventOccurred(openTimestamp) {
-				return w.until.hasEventOccurred(openTimestamp, ref)
+	if w.before.hasTimestamp() && w.after.hasTimestamp() {
+		openTimestamp := w.after.asTimestamp(ref)
+		if w.after.hasEventOccurred(ref, ref) {
+			if w.after.hasFinalEventOccurred(openTimestamp) {
+				return w.before.hasEventOccurred(openTimestamp, ref)
 			}
 		}
-		return w.until.hasFinalEventOccurred(ref)
-	} else if !w.until.hasTimestamp() && !w.from.hasTimestamp() {
+		return w.before.hasFinalEventOccurred(ref)
+	} else if !w.before.hasTimestamp() && !w.after.hasTimestamp() {
 		return false
-	} else if w.until.hasTimestamp() {
-		return w.until.hasFinalEventOccurred(ref)
+	} else if w.before.hasTimestamp() {
+		return w.before.hasFinalEventOccurred(ref)
 	}
-	return w.from.hasFinalEventOccurred(ref)
+	return w.after.hasFinalEventOccurred(ref)
 }
 
 // Answer true if the window is open with respect to the specified time.
 func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
-	openWaitsForTime := w.from.hasTimestamp()
-	closeWaitsForTime := w.until.hasTimestamp()
+	openWaitsForTime := w.after.hasTimestamp()
+	closeWaitsForTime := w.before.hasTimestamp()
 
 	if openWaitsForTime && closeWaitsForTime {
 
@@ -58,8 +58,8 @@ func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 		// that the reference timestamp is within the boundaries
 		// of those timestamp
 
-		openTimestamp := w.from.asTimestamp(scheduledAt)
-		closeTimestamp := w.until.asTimestamp(openTimestamp)
+		openTimestamp := w.after.asTimestamp(scheduledAt)
+		closeTimestamp := w.before.asTimestamp(openTimestamp)
 
 		return openTimestamp.Sub(ref) <= 0 &&
 			ref.Sub(closeTimestamp) < 0 &&
@@ -76,7 +76,7 @@ func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 		// the reference time is in the window, only if
 		// it is less than the close event
 
-		closeTimestamp := w.until.asTimestamp(scheduledAt)
+		closeTimestamp := w.before.asTimestamp(scheduledAt)
 		return ref.Sub(closeTimestamp) < 0
 	}
 
@@ -84,24 +84,24 @@ func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 	// we are in the window, only if reference
 	// timestamp is greater than the open timestamp
 
-	openTimestamp := w.from.asTimestamp(scheduledAt)
+	openTimestamp := w.after.asTimestamp(scheduledAt)
 	return ref.Sub(openTimestamp) >= 0
 }
 
 // Answer a channel that will receive an event when the next open event occurs.
 func (w *window) whenOpen(ref time.Time) chan time.Time {
-	return w.from.waiter(ref)
+	return w.after.waiter(ref)
 }
 
 // Answer a channel that will receive an event when the next close event after the specified open event occurs.
 func (w *window) whenClosed(opened time.Time) chan time.Time {
-	return w.until.waiter(opened)
+	return w.before.waiter(opened)
 }
 
 func (w *window) StringAt(ref time.Time) string {
-	return fmt.Sprintf("window[from: %s, until:%s]", dump(w.from, ref), dump(w.until, ref))
+	return fmt.Sprintf("window[after: %s, before:%s]", dump(w.after, ref), dump(w.before, ref))
 }
 
 func (w *window) String() string {
-	return fmt.Sprintf("[%s, %s]", w.from.String(), w.until.String())
+	return fmt.Sprintf("[%s, %s]", w.after.String(), w.before.String())
 }

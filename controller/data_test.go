@@ -22,16 +22,16 @@ var (
 		Param: "09:00:00",
 	}
 	earlierTimeOfDayWindow = &model.Window{
-		From:  muchEarlierTimeOfDayModel,
-		Until: beforeNowTimeOfDayModel,
+		After:  muchEarlierTimeOfDayModel,
+		Before: beforeNowTimeOfDayModel,
 	}
 	overlappingTimeOfDayWindow = &model.Window{
-		From:  beforeNowTimeOfDayModel,
-		Until: afterNowTimeOfDayModel,
+		After:  beforeNowTimeOfDayModel,
+		Before: afterNowTimeOfDayModel,
 	}
 	laterTimeOfDayWindow = &model.Window{
-		From:  shortlyAfterNowTimeOfDayModel,
-		Until: afterNowTimeOfDayModel,
+		After:  shortlyAfterNowTimeOfDayModel,
+		Before: afterNowTimeOfDayModel,
 	}
 	shortlyAfterNowTimeOfDayModel = &model.Event{
 		Rule:  "time-of-day",
@@ -58,16 +58,16 @@ var (
 		Param: "2014-10-29 11:37:30",
 	}
 	earlierTimestampWindow = &model.Window{
-		From:  muchEarlierTimestampModel,
-		Until: beforeNowTimestampModel,
+		After:  muchEarlierTimestampModel,
+		Before: beforeNowTimestampModel,
 	}
 	overlappingTimestampWindow = &model.Window{
-		From:  beforeNowTimestampModel,
-		Until: afterNowTimestampModel,
+		After:  beforeNowTimestampModel,
+		Before: afterNowTimestampModel,
 	}
 	laterTimestampWindow = &model.Window{
-		From:  shortlyAfterNowTimestampModel,
-		Until: afterNowTimeOfDayModel,
+		After:  shortlyAfterNowTimestampModel,
+		Before: afterNowTimeOfDayModel,
 	}
 	shortDelayModel = &model.Event{
 		Rule:  "delay",
@@ -90,24 +90,24 @@ var (
 		Param: "00:04:00",
 	}
 	earlierTimestampOpenDelayCloseWindow = &model.Window{
-		From:  muchEarlierTimestampModel,
-		Until: delayModel,
+		After:  muchEarlierTimestampModel,
+		Before: delayModel,
 	}
 	overlappingTimestampOpenDelayCloseWindow = &model.Window{
-		From:  beforeNowTimestampModel,
-		Until: longDelayModel,
+		After:  beforeNowTimestampModel,
+		Before: longDelayModel,
 	}
 	laterTimestampOpenDelayCloseWindow = &model.Window{
-		From:  shortlyAfterNowTimestampModel,
-		Until: delayModel,
+		After:  shortlyAfterNowTimestampModel,
+		Before: delayModel,
 	}
 	earlierTimeOfDayOpenDelayCloseWindow = &model.Window{
-		From:  muchEarlierTimeOfDayModel,
-		Until: delayModel,
+		After:  muchEarlierTimeOfDayModel,
+		Before: delayModel,
 	}
 	sunriseSunsetWindow = &model.Window{
-		From:  sunriseModel,
-		Until: sunsetModel,
+		After:  sunriseModel,
+		Before: sunsetModel,
 	}
 	sunsetModel = &model.Event{
 		Rule: "sunset",
@@ -153,8 +153,8 @@ var (
 		Close: []*model.Action{},
 	}
 	windowWithTwoDelayEvents = &model.Window{
-		From:  oneMinuteDelay,
-		Until: fourMinuteDelay,
+		After:  oneMinuteDelay,
+		Before: fourMinuteDelay,
 	}
 	taskWithTwoDelayEvents = &model.Task{
 		ID:     "task",
