@@ -27,6 +27,9 @@ type Event interface {
 	hasFinalEventOccurred(ref time.Time) bool
 }
 
+type never struct {
+}
+
 type timeEvent struct {
 	// the event model
 	model *model.Event
@@ -96,6 +99,19 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 			result.timeEvent.polyAsTimestamp = result.asTimestamp
 			return result, nil
 		}
+	case "now":
+		parsed = clock.Now()
+		result := &timestamp{
+			timeEvent: timeEvent{
+				model:  m,
+				parsed: &parsed,
+			},
+		}
+		result.timeEvent.polyAsTimestamp = result.asTimestamp
+		return result, nil
+	case "never":
+		result := &never{}
+		return result, nil
 	case "time-of-day":
 		parsed, err = time.Parse("15:04:05", m.Param)
 		if err == nil {
@@ -282,4 +298,31 @@ func dump(e Event, ref time.Time) string {
 	}
 	dump = fmt.Sprintf("%s, isRecurring=%v, hasEventOccurred(., .)=%v, hasFinalEventOccurred(.)=%v", dump, e.isRecurring(), e.hasEventOccurred(ref, ref), e.hasFinalEventOccurred(ref))
 	return dump
+}
+
+func (*never) String() string {
+	return "never"
+}
+
+func (*never) hasTimestamp() bool {
+	return false
+}
+func (*never) asTimestamp(ref time.Time) time.Time {
+	panic("this should never be called")
+}
+
+func (*never) waiter(ref time.Time) chan time.Time {
+	return make(chan time.Time)
+}
+
+func (*never) isRecurring() bool {
+	return false
+}
+
+func (*never) hasEventOccurred(scheduledAt time.Time, ref time.Time) bool {
+	return false
+}
+
+func (*never) hasFinalEventOccurred(ref time.Time) bool {
+	return false
 }
