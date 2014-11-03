@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/cpucycle/astrotime"
+	"github.com/ninjasphere/astrotime"
 	"time"
 )
 
