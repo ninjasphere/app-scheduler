@@ -75,10 +75,14 @@ func (l *userAgentListener) OnTaskSchedule(m *model.Task, keys map[string]string
 	return true
 }
 
-func (l *userAgentListener) OnTaskCancel(taskID string, keys map[string]string) bool {
-	err := l.service.Cancel(taskID)
+func (l *userAgentListener) OnTaskCancel(pTaskID *string, keys map[string]string) bool {
+	if pTaskID == nil {
+		l.service.log.Errorf("illegal argument: pTaskID is nil")
+		return true
+	}
+	err := l.service.Cancel(*pTaskID)
 	if err != nil {
-		l.service.log.Errorf("failed while canceling task received from user-agent notification from %s: %s: %v", keys["deviceId"], taskID, err)
+		l.service.log.Errorf("failed while canceling task received from user-agent notification from %s: %s: %v", keys["deviceId"], *pTaskID, err)
 	}
 	return true
 }
