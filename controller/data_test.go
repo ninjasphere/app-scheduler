@@ -105,11 +105,21 @@ var (
 		From:  muchEarlierTimeOfDayModel,
 		Until: delayModel,
 	}
+	sunriseSunsetWindow = &model.Window{
+		From:  sunriseModel,
+		Until: sunsetModel,
+	}
 	sunsetModel = &model.Event{
 		Rule: "sunset",
 	}
 	sunriseModel = &model.Event{
 		Rule: "sunrise",
+	}
+	dawnModel = &model.Event{
+		Rule: "dawn",
+	}
+	duskModel = &model.Event{
+		Rule: "dusk",
 	}
 	bogusModel = &model.Event{
 		Rule: "bogus",

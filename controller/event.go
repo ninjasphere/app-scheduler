@@ -64,6 +64,16 @@ type sunrise struct {
 	timeOfDay
 }
 
+// Civil dawn each day.
+type dawn struct {
+	timeOfDay
+}
+
+// Civil dusk each day.
+type dusk struct {
+	timeOfDay
+}
+
 // Initialize the event from the specification.
 func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 	var parsed time.Time
@@ -126,6 +136,32 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 		return result, nil
 	case "sunrise":
 		parsed = clock.Sunrise(clock.Now())
+		result := &sunrise{
+			timeOfDay: timeOfDay{
+				timeEvent: timeEvent{
+					model:  m,
+					parsed: &parsed,
+				},
+				closeEvent: closeEvent,
+			},
+		}
+		result.timeEvent.polyAsTimestamp = result.asTimestamp
+		return result, nil
+	case "dusk":
+		parsed = clock.Dusk(clock.Now())
+		result := &dusk{
+			timeOfDay: timeOfDay{
+				timeEvent: timeEvent{
+					model:  m,
+					parsed: &parsed,
+				},
+				closeEvent: closeEvent,
+			},
+		}
+		result.timeEvent.polyAsTimestamp = result.asTimestamp
+		return result, nil
+	case "dawn":
+		parsed = clock.Dawn(clock.Now())
 		result := &sunrise{
 			timeOfDay: timeOfDay{
 				timeEvent: timeEvent{
@@ -227,6 +263,16 @@ func (t *sunset) asTimestamp(ref time.Time) time.Time {
 // Answer the time of the next sunrise in the current location.
 func (t *sunrise) asTimestamp(ref time.Time) time.Time {
 	return clock.Sunrise(ref)
+}
+
+// Answer the time of the next civil dawn in the current location.
+func (t *dawn) asTimestamp(ref time.Time) time.Time {
+	return clock.Dawn(ref)
+}
+
+// Answer the time of the next civil dusk in the current location.
+func (t *dusk) asTimestamp(ref time.Time) time.Time {
+	return clock.Dusk(ref)
 }
 
 func dump(e Event, ref time.Time) string {

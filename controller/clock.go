@@ -13,6 +13,8 @@ type Clock interface {
 	SetLocation(location *time.Location)                                   // Set the time zone location
 	Sunset(ref time.Time) time.Time                                        // Next sunset after the specified time
 	Sunrise(ref time.Time) time.Time                                       // Next sunrise after the specified time.
+	Dawn(ref time.Time) time.Time                                          // Next civil dawn after the specified time
+	Dusk(ref time.Time) time.Time                                          // Next civil dusk after the specified time.
 	SetCoordinates(latitude float64, longtitude float64, altitude float64) // Set the coordinates to be used for sunrise/sunset calculations
 	ResetCoordinates()                                                     // Clear the coordinates.
 }
@@ -72,6 +74,28 @@ func (clk *systemclock) Sunrise(ref time.Time) time.Time {
 		return sunrise
 	}
 	return astrotime.NextSunrise(ref, clk.latitude, clk.longtitude)
+}
+
+func (clk *systemclock) Dawn(ref time.Time) time.Time {
+	if !clk.useCoordinates {
+		dawn := time.Date(ref.Year(), ref.Month(), ref.Day(), 18, 0, 0, 0, ref.Location())
+		if dawn.Sub(ref) < 0 {
+			dawn = dawn.AddDate(0, 0, 1)
+		}
+		return dawn
+	}
+	return astrotime.NextDawn(ref, clk.latitude, clk.longtitude, astrotime.CIVIL_DAWN)
+}
+
+func (clk *systemclock) Dusk(ref time.Time) time.Time {
+	if !clk.useCoordinates {
+		dusk := time.Date(ref.Year(), ref.Month(), ref.Day(), 6, 0, 0, 0, ref.Location())
+		if dusk.Sub(ref) < 0 {
+			dusk = dusk.AddDate(0, 0, 1)
+		}
+		return dusk
+	}
+	return astrotime.NextDusk(ref, clk.latitude, clk.longtitude, astrotime.CIVIL_DUSK)
 }
 
 func (clk *systemclock) SetCoordinates(latitude float64, longtitude float64, altitude float64) {

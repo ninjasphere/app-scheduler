@@ -23,6 +23,10 @@ and 'until' events are both recurring events, then repeats the cycle again, othe
 	<dd>Specifies sunset in the local time zone.</dd>
 	<dt>sunrise</dt>
 	<dd>Specifies sunrise in the local time zone.</dd>
+	<dt>dawn</dt>
+	<dd>Specifies civil dawn (sun 6 degrees below horizon) in the local time zone.</dd>
+	<dt>dusk</dt>
+	<dd>Specifies civil dusk (sun 6 degrees below horizon) in the local time zone.</dd>
 </dl>
 
 The schedule is passed to the application on startup as its configuration object. The schedule looks like this:
