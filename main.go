@@ -14,7 +14,8 @@ var (
 //SchedulerApp describes the scheduler application.
 type SchedulerApp struct {
 	support.AppSupport
-	service *SchedulerService
+	service   *SchedulerService
+	userAgent *userAgentListener
 }
 
 // Start is called after the ExportApp call is complete.
@@ -31,7 +32,15 @@ func (a *SchedulerApp) Start(m *model.Schedule) error {
 		},
 	}
 	err := a.service.init(a.Info.ID)
-	return err
+	if err != nil {
+		return err
+	}
+	a.userAgent = &userAgentListener{}
+	err = a.userAgent.init(a.service)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Stop the scheduler module.
@@ -43,6 +52,35 @@ func (a *SchedulerApp) Stop() error {
 		err = tmp.scheduler.Stop()
 	}
 	return err
+}
+
+type userAgentListener struct {
+	service *SchedulerService
+	client  *ninja.ServiceClient
+}
+
+func (l *userAgentListener) init(service *SchedulerService) error {
+	l.service = service
+	l.client = l.service.conn.GetServiceClient("$device/:deviceId/channel/user-agent")
+	l.client.OnEvent("schedule-task", l.OnTaskSchedule)
+	l.client.OnEvent("cancel-task", l.OnTaskCancel)
+	return nil
+}
+
+func (l *userAgentListener) OnTaskSchedule(m *model.Task, keys map[string]string) bool {
+	_, err := l.service.Schedule(m)
+	if err != nil {
+		l.service.log.Errorf("failed while scheduling task received via user-agent notification from %s: %v: %v", keys["deviceId"], m, err)
+	}
+	return true
+}
+
+func (l *userAgentListener) OnTaskCancel(taskID string, keys map[string]string) bool {
+	err := l.service.Cancel(taskID)
+	if err != nil {
+		l.service.log.Errorf("failed while canceling task received from user-agent notification from %s: %s: %v", keys["deviceId"], taskID, err)
+	}
+	return true
 }
 
 func main() {
