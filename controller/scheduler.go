@@ -87,7 +87,13 @@ func (s *Scheduler) loop() {
 						log.Debugf("exiting %s", taskID)
 						reap <- taskID
 					}()
-					runner.loop()
+					permanentlyClosed := runner.loop()
+					if permanentlyClosed {
+						reply := make(chan error, 1)
+						s.cancels <- cancelRequest{taskID, reply}
+						_ = <-reply
+						s.flush <- struct{}{}
+					}
 				}()
 				log.Debugf("started %s", taskID)
 			}

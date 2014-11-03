@@ -44,7 +44,7 @@ func (t *task) init(m *model.Task, actuations chan actuationRequest) error {
 }
 
 // A scheduler task
-func (t *task) loop() {
+func (t *task) loop() bool {
 	for {
 
 		// FIXME: if the window is not recurrent, then we need to check that it is still valid.
@@ -54,9 +54,9 @@ func (t *task) loop() {
 
 		for {
 			if t.window.isPermanentlyClosed(now) {
-				log.Debugf("at '%v' the window '%v' for task '%s' became permanently closed. the task will exit.", now, t.window, t.model.ID)
+				log.Debugf("At '%v' the window '%v' for task '%s' became permanently closed. The task will exit and then be cancelled.", now, t.window, t.model.ID)
 				// stop running when we can run no more
-				return
+				return true
 			}
 
 			if t.window.isOpen(scheduledAt, now) {
@@ -65,7 +65,7 @@ func (t *task) loop() {
 				var quit bool
 				quit, now = t.waitForOpenEvent(scheduledAt)
 				if quit {
-					return
+					return false
 				}
 			}
 		}
@@ -73,7 +73,7 @@ func (t *task) loop() {
 		t.doActions("open", t.openers)
 
 		if t.waitForCloseEvent(now) {
-			return
+			return false
 		}
 
 		t.doActions("close", t.closers)
