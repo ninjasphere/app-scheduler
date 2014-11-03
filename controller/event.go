@@ -162,7 +162,7 @@ func newEvent(m *model.Event, closeEvent bool) (Event, error) {
 		return result, nil
 	case "dawn":
 		parsed = clock.Dawn(clock.Now())
-		result := &sunrise{
+		result := &dawn{
 			timeOfDay: timeOfDay{
 				timeEvent: timeEvent{
 					model:  m,
