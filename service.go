@@ -26,6 +26,7 @@ type SchedulerService struct {
 func (s *SchedulerService) init(moduleID string) error {
 	s.scheduler = &controller.Scheduler{}
 	s.scheduler.SetLogger(s.log)
+	s.scheduler.SetConfigStore(s.configStore)
 	s.scheduler.SetConnection(s.conn, time.Millisecond*time.Duration(config.Int(10000, "scheduler", "timeout")))
 
 	var err error
@@ -39,9 +40,6 @@ func (s *SchedulerService) init(moduleID string) error {
 	if err := s.scheduler.Start(s.model); err != nil {
 		return err
 	}
-
-	s.configStore(s.model)
-
 	return nil
 }
 
@@ -53,11 +51,11 @@ func (s *SchedulerService) Schedule(task *model.Task) (*string, error) {
 			s.log.Warningf("cancel failed %s", err)
 		}
 		err = s.scheduler.Schedule(task)
+		var copy string
 		if err == nil {
-			s.model.Tasks = append(s.model.Tasks, task)
-			s.configStore(s.model)
+			copy = task.ID
 		}
-		copy := task.ID
+		s.scheduler.FlushModel()
 		return &copy, err
 	}
 	return nil, fmt.Errorf("cannot schedule a task while the scheduler is stopped")
@@ -76,10 +74,7 @@ func (s *SchedulerService) Cancel(taskID string) error {
 		}
 		if found > -1 {
 			err = s.scheduler.Cancel(taskID)
-			if err == nil {
-				s.model.Tasks = append(s.model.Tasks[0:found], s.model.Tasks[found+1:]...)
-				s.configStore(s.model)
-			}
+			s.scheduler.FlushModel()
 		} else {
 			err = nil
 		}
@@ -98,7 +93,6 @@ func (s *SchedulerService) SetTimeZone(timezone string) error {
 		if err := s.scheduler.Start(s.model); err != nil {
 			return err
 		}
-		s.configStore(s.model)
 	}
 	return nil
 }
@@ -106,14 +100,14 @@ func (s *SchedulerService) SetTimeZone(timezone string) error {
 // SetCoordinates set the location coordinates of the schedule. The scheduler will be restarted.
 func (s *SchedulerService) SetCoordinates(coordinates *model.Location) error {
 	if s.scheduler != nil {
-		if err := s.scheduler.Stop(); err != nil {
+		var err error
+		if err = s.scheduler.Stop(); err != nil {
 			return err
 		}
 		s.model.Location = coordinates
-		if err := s.scheduler.Start(s.model); err != nil {
+		if err = s.scheduler.Start(s.model); err != nil {
 			return err
 		}
-		s.configStore(s.model)
 	}
 	return nil
 }

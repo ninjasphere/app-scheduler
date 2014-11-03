@@ -11,8 +11,9 @@ import (
 var log = logger.GetLogger("")
 
 type startRequest struct {
-	model *model.Task
-	reply chan error
+	model       *model.Task
+	reply       chan error
+	updateModel bool
 }
 
 type cancelRequest struct {
@@ -30,6 +31,7 @@ type Scheduler struct {
 	conn        *ninja.Connection
 	thingClient *ninja.ServiceClient
 	timeout     time.Duration
+	dirty       bool
 	model       *model.Schedule
 	started     map[string]*task
 	stopped     chan struct{}
@@ -37,6 +39,15 @@ type Scheduler struct {
 	tasks       chan startRequest
 	cancels     chan cancelRequest
 	actuations  chan actuationRequest
+	flush       chan struct{}
+	configStore func(m *model.Schedule)
+}
+
+func (s *Scheduler) flushModel() {
+	if s.dirty {
+		s.configStore(s.model)
+		s.dirty = false
+	}
 }
 
 // The control loop of the scheduler. It is responsible for admitting
@@ -54,6 +65,9 @@ func (s *Scheduler) loop() {
 				t.quit <- struct{}{}
 			}
 
+		case _ = <-s.flush:
+			s.flushModel()
+
 		case taskID := <-reap:
 			log.Debugf("reaped %s", taskID)
 			delete(s.started, taskID)
@@ -64,6 +78,10 @@ func (s *Scheduler) loop() {
 			err := runner.init(startReq.model, s.actuations)
 			if err == nil {
 				s.started[taskID] = runner
+				if startReq.updateModel {
+					s.dirty = true
+					s.model.Tasks = append(s.model.Tasks, startReq.model)
+				}
 				go func() {
 					defer func() {
 						log.Debugf("exiting %s", taskID)
@@ -77,6 +95,21 @@ func (s *Scheduler) loop() {
 
 		case cancelReq := <-s.cancels:
 			var err error
+
+			var found = -1
+			for i, m := range s.model.Tasks {
+				if m.ID == cancelReq.id {
+					found = i
+					break
+				}
+			}
+			if found < 0 {
+				err = fmt.Errorf("The task (%s) does not exist", cancelReq.id)
+			} else {
+				s.model.Tasks = append(s.model.Tasks[0:found], s.model.Tasks[found+1:]...)
+				s.dirty = true
+			}
+
 			if runner, ok := s.started[cancelReq.id]; ok {
 				runner.quit <- struct{}{}
 			} else {
@@ -98,12 +131,14 @@ func (s *Scheduler) loop() {
 // Start the scheduler. Iterate over the model schedule, creating and starting tasks for each Task model found.
 func (s *Scheduler) Start(m *model.Schedule) error {
 	s.model = m
+	s.dirty = true
 	s.shutdown = make(chan bool)
 	s.started = make(map[string]*task)
 	s.stopped = make(chan struct{})
 	s.tasks = make(chan startRequest)
 	s.cancels = make(chan cancelRequest)
 	s.actuations = make(chan actuationRequest)
+	s.flush = make(chan struct{})
 
 	var loc *time.Location
 	var err error
@@ -127,12 +162,14 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 
 	for _, t := range m.Tasks {
 		reply := make(chan error)
-		s.tasks <- startRequest{t, reply}
+		s.tasks <- startRequest{t, reply, false}
 		err := <-reply
 		if err != nil {
 			errors = append(errors, err)
 		}
 	}
+
+	s.flush <- struct{}{}
 
 	if len(errors) > 1 {
 		return fmt.Errorf("errors %v", errors)
@@ -153,9 +190,13 @@ func (s *Scheduler) Stop() error {
 // Schedule the specified task. Starts a task controller for the specified task model.
 func (s *Scheduler) Schedule(m *model.Task) error {
 	reply := make(chan error)
-	s.tasks <- startRequest{m, reply}
+	s.tasks <- startRequest{m, reply, true}
 	err := <-reply
 	return err
+}
+
+func (s *Scheduler) FlushModel() {
+	s.flush <- struct{}{}
 }
 
 // Cancel the specified task. Stops the task controller for the specified task.
@@ -179,4 +220,9 @@ func (s *Scheduler) SetConnection(conn *ninja.Connection, timeout time.Duration)
 	s.conn = conn
 	s.timeout = timeout
 	s.thingClient = s.conn.GetServiceClient("$home/services/ThingModel")
+}
+
+// SetConfigStore sets the function used to write updates to the schedule
+func (s *Scheduler) SetConfigStore(store func(m *model.Schedule)) {
+	s.configStore = store
 }
