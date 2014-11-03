@@ -118,7 +118,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 
 	// set the coordinates of the clock
 	if s.model.Location != nil {
-		clock.SetCoordinates(s.model.Location.Latitude, s.model.Location.Longtitude, s.model.Location.Altitude)
+		clock.SetCoordinates(s.model.Location.Latitude, s.model.Location.Longitude, s.model.Location.Altitude)
 	}
 
 	go s.loop()

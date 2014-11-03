@@ -57,9 +57,9 @@ type Task struct {
 
 // A Location describes a particular geographical location. Used as input to resolution of "sunrise" and "sunset" event rules.
 type Location struct {
-	Latitude   float64 `json:"latitude"`
-	Longtitude float64 `json:"longtitude"`
-	Altitude   float64 `json:"altitude,omitempty"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Altitude  float64 `json:"altitude,omitempty"`
 }
 
 // A Schedule specifies a list of Tasks, a Location and a TimeZone
