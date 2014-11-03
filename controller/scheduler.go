@@ -201,6 +201,8 @@ func (s *Scheduler) Schedule(m *model.Task) error {
 	return err
 }
 
+// FlushModel ensures that any pending updates to the model have been flushed back to the
+// application configuration.
 func (s *Scheduler) FlushModel() {
 	s.flush <- struct{}{}
 }
