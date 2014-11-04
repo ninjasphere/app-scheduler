@@ -30,6 +30,7 @@ type actuationRequest struct {
 type Scheduler struct {
 	conn        *ninja.Connection
 	thingClient *ninja.ServiceClient
+	siteClient  *ninja.ServiceClient
 	timeout     time.Duration
 	dirty       bool
 	siteID      string
@@ -229,6 +230,7 @@ func (s *Scheduler) SetConnection(conn *ninja.Connection, timeout time.Duration)
 	s.conn = conn
 	s.timeout = timeout
 	s.thingClient = s.conn.GetServiceClient("$home/services/ThingModel")
+	s.siteClient = s.conn.GetServiceClient("$home/services/SiteModel")
 }
 
 // SetConfigStore sets the function used to write updates to the schedule
