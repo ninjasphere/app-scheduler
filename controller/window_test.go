@@ -104,3 +104,31 @@ func TestLaterTimestampOpenDelayCloseWindowIsNotOpen(t *testing.T) {
 func TestSunriseSunsetWindow(t *testing.T) {
 	runNonOverlappingWindow(t, sunriseSunsetWindow, false)
 }
+
+func TestNowNeverWindow(t *testing.T) {
+	initMockClock(testTime)
+	stub := &window{}
+	if err := stub.init(nowNeverWindow); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !stub.isOpen(testTime, testTime) {
+		t.Fatalf("nowNeverWindow.isOpen() was %v, wanted %v", false, true)
+	}
+	if stub.isPermanentlyClosed(testTime) {
+		t.Fatalf("nowNeverWindow.isPermanentlyClosed() was %v, wanted %v", true, false)
+	}
+}
+
+func TestNeverNowWindow(t *testing.T) {
+	initMockClock(testTime)
+	stub := &window{}
+	if err := stub.init(neverNowWindow); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if stub.isOpen(testTime, testTime) {
+		t.Fatalf("neverNowWindow.isOpen() was %v, wanted %v", true, false)
+	}
+	if stub.isPermanentlyClosed(testTime) {
+		t.Fatalf("neverNowWindow.isPermanentlyClosed() was %v, wanted %v", true, false)
+	}
+}
