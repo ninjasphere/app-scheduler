@@ -32,6 +32,7 @@ type Scheduler struct {
 	thingClient *ninja.ServiceClient
 	timeout     time.Duration
 	dirty       bool
+	siteID      string
 	model       *model.Schedule
 	started     map[string]*task
 	stopped     chan struct{}
@@ -233,4 +234,9 @@ func (s *Scheduler) SetConnection(conn *ninja.Connection, timeout time.Duration)
 // SetConfigStore sets the function used to write updates to the schedule
 func (s *Scheduler) SetConfigStore(store func(m *model.Schedule)) {
 	s.configStore = store
+}
+
+// SetSiteID sets the site identifier of the scheduler
+func (s *Scheduler) SetSiteID(id string) {
+	s.siteID = id
 }

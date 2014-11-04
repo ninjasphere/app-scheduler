@@ -24,13 +24,15 @@ type SchedulerService struct {
 }
 
 func (s *SchedulerService) init(moduleID string) error {
+	siteID := config.MustString("siteId")
+
 	s.scheduler = &controller.Scheduler{}
 	s.scheduler.SetLogger(s.log)
+	s.scheduler.SetSiteID(siteID)
 	s.scheduler.SetConfigStore(s.configStore)
 	s.scheduler.SetConnection(s.conn, time.Millisecond*time.Duration(config.Int(10000, "scheduler", "timeout")))
 
 	var err error
-	siteID := config.MustString("siteId")
 	topic := fmt.Sprintf("$site/%s/service/%s", siteID, "scheduler")
 	announcement := &nmodel.ServiceAnnouncement{
 		Schema: "http://schema.ninjablocks.com/service/scheduler",
