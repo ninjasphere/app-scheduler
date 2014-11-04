@@ -5,6 +5,7 @@ import (
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/go-ninja/api"
 	"github.com/ninjasphere/go-ninja/logger"
+	nmodel "github.com/ninjasphere/go-ninja/model"
 	"time"
 )
 
@@ -148,8 +149,28 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	s.actuations = make(chan actuationRequest)
 	s.flush = make(chan struct{})
 
-	var loc *time.Location
 	var err error
+
+	// update schedule model timezon and location paramters from the current site parameters provided that they
+	// are not nil or empty.
+
+	siteModel := &nmodel.Site{}
+	if err = s.siteClient.Call("fetch", s.siteID, siteModel, s.timeout); err != nil {
+		return fmt.Errorf("error while retrieving model site: %v", err)
+	}
+
+	if siteModel.TimeZoneID != nil && *siteModel.TimeZoneID != "" {
+		s.model.TimeZone = *siteModel.TimeZoneID
+	}
+
+	if siteModel.Latitude != nil && siteModel.Longitude != nil {
+		s.model.Location = &model.Location{}
+		s.model.Location.Latitude = *siteModel.Latitude
+		s.model.Location.Longitude = *siteModel.Longitude
+		s.model.Location.Altitude = 0.0
+	}
+
+	var loc *time.Location
 	// set the timezone of the clock
 	if loc, err = time.LoadLocation(s.model.TimeZone); err != nil {
 		log.Warningf("error while setting timezone (%s): %s", s.model.TimeZone, err)
