@@ -81,15 +81,9 @@ TOPICS
 
 The scheduler service listens on a topic called:
 
-	$node/{serial}/app/com.ninjablocks.scheduler/service/scheduler
+	$site/{siteId}/service/scheduler
 
 It supports the following methods:
 
 	schedule {task-model}
 	cancel {task-id}
-
-The scheduler also listens on topics of the form:
-
-	$device/:deviceId/channel/user-agent
-
-for 'schedule-task' and 'cancel-task' events.
