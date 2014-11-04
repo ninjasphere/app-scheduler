@@ -31,20 +31,8 @@ func (w *window) init(m *model.Window) error {
 // event has not yet occurred or itself recurring
 func (w *window) isPermanentlyClosed(ref time.Time) bool {
 
-	if w.before.hasTimestamp() && w.after.hasTimestamp() {
-		openTimestamp := w.after.asTimestamp(ref)
-		if w.after.hasEventOccurred(ref, ref) {
-			if w.after.hasFinalEventOccurred(openTimestamp) {
-				return w.before.hasEventOccurred(openTimestamp, ref)
-			}
-		}
-		return w.before.hasFinalEventOccurred(ref)
-	} else if !w.before.hasTimestamp() && !w.after.hasTimestamp() {
-		return false
-	} else if w.before.hasTimestamp() {
-		return w.before.hasFinalEventOccurred(ref) && w.after.hasEventOccurred(ref, ref)
-	}
-	return w.after.hasFinalEventOccurred(ref) && w.before.hasEventOccurred(ref, ref)
+	return !w.isOpen(ref, ref) &&
+		(w.after.hasFinalEventOccurred(ref) || (w.after.hasEventOccurred(ref, ref) && w.before.hasFinalEventOccurred(ref)))
 }
 
 // Answer true if the window is open with respect to the specified time.
