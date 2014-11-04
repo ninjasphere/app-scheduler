@@ -42,50 +42,31 @@ func (w *window) isPermanentlyClosed(ref time.Time) bool {
 	} else if !w.before.hasTimestamp() && !w.after.hasTimestamp() {
 		return false
 	} else if w.before.hasTimestamp() {
-		return w.before.hasFinalEventOccurred(ref)
+		return w.before.hasFinalEventOccurred(ref) && w.after.hasEventOccurred(ref, ref)
 	}
-	return w.after.hasFinalEventOccurred(ref)
+	return w.after.hasFinalEventOccurred(ref) && w.before.hasEventOccurred(ref, ref)
 }
 
 // Answer true if the window is open with respect to the specified time.
 func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 	openWaitsForTime := w.after.hasTimestamp()
-	closeWaitsForTime := w.before.hasTimestamp()
 
-	if openWaitsForTime && closeWaitsForTime {
+	if openWaitsForTime {
 
 		// when both events are timestamp based, check
 		// that the reference timestamp is within the boundaries
 		// of those timestamp
 
-		openTimestamp := w.after.asTimestamp(scheduledAt)
-		closeTimestamp := w.before.asTimestamp(openTimestamp)
-
-		return openTimestamp.Sub(ref) <= 0 &&
-			ref.Sub(closeTimestamp) < 0 &&
-			openTimestamp.Sub(closeTimestamp) < 0
-	} else if !openWaitsForTime && !closeWaitsForTime {
+		return w.after.hasEventOccurred(scheduledAt, ref) &&
+			!w.before.hasEventOccurred(w.after.asTimestamp(scheduledAt), ref)
+	} else {
 
 		// when neither events are timestamp based, we have to
 		// wait to wait for the open event to know we are open
 
-		return false
-	} else if closeWaitsForTime {
-
-		// when only the close event is timestamp based we
-		// the reference time is in the window, only if
-		// it is less than the close event
-
-		closeTimestamp := w.before.asTimestamp(scheduledAt)
-		return ref.Sub(closeTimestamp) < 0
+		return w.after.hasEventOccurred(scheduledAt, ref) &&
+			!w.before.hasEventOccurred(scheduledAt, ref)
 	}
-
-	// when only the open event is timestamp basedd
-	// we are in the window, only if reference
-	// timestamp is greater than the open timestamp
-
-	openTimestamp := w.after.asTimestamp(scheduledAt)
-	return ref.Sub(openTimestamp) >= 0
 }
 
 // Answer a channel that will receive an event when the next open event occurs.
