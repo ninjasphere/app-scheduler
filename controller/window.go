@@ -47,14 +47,13 @@ func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 
 		return w.after.hasEventOccurred(scheduledAt, ref) &&
 			!w.before.hasEventOccurred(w.after.asTimestamp(scheduledAt), ref)
-	} else {
-
-		// when neither events are timestamp based, we have to
-		// wait to wait for the open event to know we are open
-
-		return w.after.hasEventOccurred(scheduledAt, ref) &&
-			!w.before.hasEventOccurred(scheduledAt, ref)
 	}
+
+	// when neither events are timestamp based, we have to
+	// wait to wait for the open event to know we are open
+
+	return w.after.hasEventOccurred(scheduledAt, ref) &&
+		!w.before.hasEventOccurred(scheduledAt, ref)
 }
 
 // Answer a channel that will receive an event when the next open event occurs.
