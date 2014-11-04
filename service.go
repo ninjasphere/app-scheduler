@@ -30,7 +30,8 @@ func (s *SchedulerService) init(moduleID string) error {
 	s.scheduler.SetConnection(s.conn, time.Millisecond*time.Duration(config.Int(10000, "scheduler", "timeout")))
 
 	var err error
-	topic := fmt.Sprintf("$node/%s/app/%s/service/%s", config.Serial(), moduleID, "scheduler")
+	siteID := config.MustString("siteId")
+	topic := fmt.Sprintf("$site/%s/service/%s", siteID, "scheduler")
 	announcement := &nmodel.ServiceAnnouncement{
 		Schema: "http://schema.ninjablocks.com/service/scheduler",
 	}
