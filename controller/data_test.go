@@ -13,6 +13,12 @@ var (
 	futureTimeDelta1    = time.Date(2014, 10, 29, 12, 00, 00, 1, time.Now().Location())
 	futureTimeDeltaNeg1 = time.Date(2014, 10, 29, 11, 59, 59, 999999999, time.Now().Location())
 
+	nowModel = &model.Event{
+		Rule: "now",
+	}
+	neverModel = &model.Event{
+		Rule: "never",
+	}
 	muchEarlierTimeOfDayModel = &model.Event{
 		Rule:  "time-of-day",
 		Param: "03:00:00",
@@ -167,5 +173,13 @@ var (
 			},
 		},
 		Close: []*model.Action{},
+	}
+	nowNeverWindow = &model.Window{
+		After:  nowModel,
+		Before: neverModel,
+	}
+	neverNowWindow = &model.Window{
+		After:  neverModel,
+		Before: nowModel,
 	}
 )
