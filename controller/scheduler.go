@@ -112,18 +112,23 @@ func (s *Scheduler) loop() {
 					break
 				}
 			}
-			if found < 0 {
-				err = fmt.Errorf("The task (%s) does not exist", cancelReq.id)
-			} else {
+
+			if found >= 0 {
 				s.model.Tasks = append(s.model.Tasks[0:found], s.model.Tasks[found+1:]...)
 				s.dirty = true
 			}
 
 			if runner, ok := s.started[cancelReq.id]; ok {
+				if found < 0 {
+					err = fmt.Errorf("found task %s in runtime but not in model", cancelReq.id)
+				}
 				runner.quit <- struct{}{}
 			} else {
-				err = fmt.Errorf("task id (%s) does not exist", cancelReq.id)
+				if found >= 0 {
+					err = fmt.Errorf("found task %s in model but not in runtime", cancelReq.id)
+				}
 			}
+
 			cancelReq.reply <- err
 
 		case actuationReq := <-s.actuations:
