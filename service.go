@@ -76,6 +76,15 @@ func (s *SchedulerService) Cancel(taskID string) error {
 	return fmt.Errorf("cannot cancel a task while the scheduler is stopped")
 }
 
+// Status returns the status of a specified task.
+func (s *SchedulerService) Status(taskID string) (*string, error) {
+	if s.scheduler != nil {
+		status, err := s.scheduler.Status(taskID)
+		return &status, err
+	}
+	return nil, fmt.Errorf("cannot get the status of a task while the scheduler is stopped")
+}
+
 // SetTimeZone sets the scheduler timezone. The scheduler will be restarted.
 func (s *SchedulerService) SetTimeZone(timezone string) error {
 	if s.scheduler != nil {

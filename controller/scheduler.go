@@ -27,6 +27,13 @@ type actuationRequest struct {
 	reply  chan error
 }
 
+type statusRequest struct {
+	taskID string
+	status string
+	err    error
+	reply  chan *statusRequest
+}
+
 // Scheduler is a controller that coordinates the execution of the tasks specified by a model schedule.
 type Scheduler struct {
 	conn        *ninja.Connection
@@ -42,6 +49,7 @@ type Scheduler struct {
 	tasks       chan startRequest
 	cancels     chan cancelRequest
 	actuations  chan actuationRequest
+	status      chan *statusRequest
 	flush       chan struct{}
 	configStore func(m *model.Schedule)
 }
@@ -134,6 +142,15 @@ func (s *Scheduler) loop() {
 		case actuationReq := <-s.actuations:
 			err := actuationReq.action.actuate(s.conn, s.thingClient, s.timeout)
 			actuationReq.reply <- err
+		case statusReq := <-s.status:
+			if t, ok := s.started[statusReq.taskID]; ok {
+				statusReq.status = t.status
+			} else {
+				statusReq.err = fmt.Errorf("Task %s not found", statusReq.taskID)
+				statusReq.status = statusReq.err.Error()
+			}
+			statusReq.reply <- statusReq
+
 		}
 
 	}
@@ -152,6 +169,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	s.tasks = make(chan startRequest)
 	s.cancels = make(chan cancelRequest)
 	s.actuations = make(chan actuationRequest)
+	s.status = make(chan *statusRequest)
 	s.flush = make(chan struct{})
 
 	var err error
@@ -241,6 +259,19 @@ func (s *Scheduler) Cancel(taskID string) error {
 	s.cancels <- cancelRequest{taskID, reply}
 	err := <-reply
 	return err
+}
+
+// Status answers the staus of the specified task.
+func (s *Scheduler) Status(taskID string) (string, error) {
+	request := &statusRequest{
+		taskID: taskID,
+		err:    nil,
+		status: "",
+		reply:  make(chan *statusRequest),
+	}
+	s.status <- request
+	_ = <-request.reply
+	return request.status, request.err
 }
 
 // SetLogger sets the logger to be used by the scheduler component.

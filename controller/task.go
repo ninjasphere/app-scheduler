@@ -1,8 +1,18 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/ninjasphere/app-scheduler/model"
 	"time"
+)
+
+const (
+	statusScheduled         = "scheduled"
+	statusWaitingForOpen    = "waiting for open - %s"
+	statusExecutingOpen     = "executing open actions"
+	statusWaitingForClose   = "waiting for close - %s"
+	statusExecutingClose    = "executing close actions"
+	statusPermanentlyClosed = "permanently closed"
 )
 
 type task struct {
@@ -12,11 +22,13 @@ type task struct {
 	closers    []*action
 	quit       chan struct{}
 	actuations chan actuationRequest
+	status     string
 }
 
 func (t *task) init(m *model.Task, actuations chan actuationRequest) error {
 	t.model = m
 	t.window = &window{}
+	t.status = statusScheduled
 	t.actuations = actuations
 	err := t.window.init(m.Window)
 	if err != nil {
@@ -52,10 +64,13 @@ func (t *task) loop() bool {
 		now := clock.Now()
 		scheduledAt := now
 
+		t.status = fmt.Sprintf(statusWaitingForOpen, t.window.after)
+
 		for {
 			if t.window.isPermanentlyClosed(now) {
 				log.Debugf("At '%v' the window '%v' for task '%s' became permanently closed. The task will exit and then be cancelled.", now, t.window, t.model.ID)
 				// stop running when we can run no more
+				t.status = statusPermanentlyClosed
 				return true
 			}
 
@@ -70,11 +85,17 @@ func (t *task) loop() bool {
 			}
 		}
 
+		t.status = statusExecutingOpen
+
 		t.doActions("open", t.openers)
+
+		t.status = fmt.Sprintf(statusWaitingForClose, t.window.before)
 
 		if t.waitForCloseEvent(now) {
 			return false
 		}
+
+		t.status = statusExecutingClose
 
 		t.doActions("close", t.closers)
 
