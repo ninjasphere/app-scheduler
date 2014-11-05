@@ -34,6 +34,13 @@ type statusRequest struct {
 	reply  chan *statusRequest
 }
 
+type fetchRequest struct {
+	taskID string
+	model  *model.Task
+	err    error
+	reply  chan *fetchRequest
+}
+
 // Scheduler is a controller that coordinates the execution of the tasks specified by a model schedule.
 type Scheduler struct {
 	conn        *ninja.Connection
@@ -50,6 +57,7 @@ type Scheduler struct {
 	cancels     chan cancelRequest
 	actuations  chan actuationRequest
 	status      chan *statusRequest
+	fetch       chan *fetchRequest
 	flush       chan struct{}
 	configStore func(m *model.Schedule)
 }
@@ -59,6 +67,16 @@ func (s *Scheduler) flushModel() {
 		s.configStore(s.model)
 		s.dirty = false
 	}
+}
+
+// find the specified task model. answers -1, nil if there is no match
+func (s *Scheduler) findTaskModel(taskID string) (int, *model.Task) {
+	for i, m := range s.model.Tasks {
+		if m.ID == taskID {
+			return i, m
+		}
+	}
+	return -1, nil
 }
 
 // The control loop of the scheduler. It is responsible for admitting
@@ -113,13 +131,7 @@ func (s *Scheduler) loop() {
 		case cancelReq := <-s.cancels:
 			var err error
 
-			var found = -1
-			for i, m := range s.model.Tasks {
-				if m.ID == cancelReq.id {
-					found = i
-					break
-				}
-			}
+			found, _ := s.findTaskModel(cancelReq.id)
 
 			if found >= 0 {
 				s.model.Tasks = append(s.model.Tasks[0:found], s.model.Tasks[found+1:]...)
@@ -142,6 +154,7 @@ func (s *Scheduler) loop() {
 		case actuationReq := <-s.actuations:
 			err := actuationReq.action.actuate(s.conn, s.thingClient, s.timeout)
 			actuationReq.reply <- err
+
 		case statusReq := <-s.status:
 			if t, ok := s.started[statusReq.taskID]; ok {
 				statusReq.status = t.status
@@ -151,6 +164,15 @@ func (s *Scheduler) loop() {
 			}
 			statusReq.reply <- statusReq
 
+		case fetchReq := <-s.fetch:
+			if found, model := s.findTaskModel(fetchReq.taskID); found >= 0 {
+				fetchReq.model = model
+				fetchReq.err = nil
+			} else {
+				fetchReq.err = fmt.Errorf("Task %s not found", fetchReq.taskID)
+				fetchReq.model = nil
+			}
+			fetchReq.reply <- fetchReq
 		}
 
 	}
@@ -170,6 +192,7 @@ func (s *Scheduler) Start(m *model.Schedule) error {
 	s.cancels = make(chan cancelRequest)
 	s.actuations = make(chan actuationRequest)
 	s.status = make(chan *statusRequest)
+	s.fetch = make(chan *fetchRequest)
 	s.flush = make(chan struct{})
 
 	var err error
@@ -272,6 +295,19 @@ func (s *Scheduler) Status(taskID string) (string, error) {
 	s.status <- request
 	_ = <-request.reply
 	return request.status, request.err
+}
+
+// Fetch the specified task object.
+func (s *Scheduler) Fetch(taskID string) (*model.Task, error) {
+	request := &fetchRequest{
+		taskID: taskID,
+		err:    nil,
+		model:  nil,
+		reply:  make(chan *fetchRequest),
+	}
+	s.fetch <- request
+	_ = <-request.reply
+	return request.model, request.err
 }
 
 // SetLogger sets the logger to be used by the scheduler component.

@@ -85,6 +85,15 @@ func (s *SchedulerService) Status(taskID string) (*string, error) {
 	return nil, fmt.Errorf("cannot get the status of a task while the scheduler is stopped")
 }
 
+// Fetch the defintion of the specified task.
+func (s *SchedulerService) Fetch(taskID string) (*model.Task, error) {
+	if s.scheduler != nil {
+		model, err := s.scheduler.Fetch(taskID)
+		return model, err
+	}
+	return nil, fmt.Errorf("cannot fetch the task while the scheduler is stopped")
+}
+
 // SetTimeZone sets the scheduler timezone. The scheduler will be restarted.
 func (s *SchedulerService) SetTimeZone(timezone string) error {
 	if s.scheduler != nil {
