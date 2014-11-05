@@ -67,11 +67,11 @@ func (s *SchedulerService) Schedule(task *model.Task) (*string, error) {
 // Cancel an existing task.
 func (s *SchedulerService) Cancel(taskID string) error {
 	if s.scheduler != nil {
-		if err := s.scheduler.Cancel(taskID); err == nil {
+		var err error
+		if err = s.scheduler.Cancel(taskID); err == nil {
 			s.scheduler.FlushModel()
-		} else {
-			return err
 		}
+		return err
 	}
 	return fmt.Errorf("cannot cancel a task while the scheduler is stopped")
 }
