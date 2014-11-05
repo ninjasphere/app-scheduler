@@ -94,7 +94,7 @@ func (s *SchedulerService) Fetch(taskID string) (*model.Task, error) {
 	return nil, fmt.Errorf("cannot fetch the task while the scheduler is stopped")
 }
 
-// Fetch the entire schedule.
+// FetchSchedule fetches the the entire schedule.
 func (s *SchedulerService) FetchSchedule() (*model.Schedule, error) {
 	if s.scheduler != nil {
 		return s.model, nil
