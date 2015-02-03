@@ -1,0 +1,29 @@
+<div ng-controller="TaskEdit">
+<dl>
+<dt>description</dt>
+<dd><input ng-model="description"/></dd>
+<dt>time</dt>
+<dd><input ng-model="timeOfDay"/></dd>
+<dt>things</dt>
+<dd>
+<select>
+	<option ng-repeat="thing in availableThings" value="{{thing.id}}">{{thing.description}} in {{thing.room}}</option>
+</select>
+<input type="button" value="add" ng-click="add()"/>
+<ul>
+	<li ng-repeat="thing in selectedThings">
+		<input type="checkbox"><label>{{thing.description}} in {{thing.room}}</label>
+		<input type="radio" ng-model="state" value="on"/><label>on</label>
+		<input type="radio" ng-model="state" value="off"/><label>off</label>
+	</li>
+</ul>
+<input type="button" value="remove"  ng-click="remove()"/>
+</dd>
+</dl>
+<br/>
+
+<div>{{message}}</div>
+<input type="button" value="save" ng-click="save()"/>
+<input type="button" value="delete" ng-click="delete()"/>
+<input type="button" value="cancel" ng-click="cancel()"/>
+</div>

@@ -1,0 +1,10 @@
+<div ng-controller="TaskList">
+<ul>
+	<li>
+		<p><a href="#/create">create a new task</a></p>
+	</li>
+	<li ng-repeat="task in tasks">
+		<p><a href="#/edit/{{task.id}}">{{task.description}}</a></p>
+	</li>
+</ul>
+</div>
