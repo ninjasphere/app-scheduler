@@ -1,6 +1,7 @@
 package service
 
 import (
+	"code.google.com/p/go-uuid/uuid"
 	"fmt"
 	"github.com/ninjasphere/app-scheduler/controller"
 	"github.com/ninjasphere/app-scheduler/model"
@@ -49,9 +50,14 @@ func (s *SchedulerService) Init(moduleID string) error {
 // Schedule a new task or re-schedules an existing task.
 func (s *SchedulerService) Schedule(task *model.Task) (*string, error) {
 	if s.Scheduler != nil {
-		err := s.Cancel(task.ID)
-		if err != nil {
-			// might be ok
+		var err error
+		if task.ID != "" {
+			_, err = s.Cancel(task.ID)
+			if err != nil {
+				// might be ok
+			}
+		} else {
+			task.ID = uuid.NewUUID().String()
 		}
 		err = s.Scheduler.Schedule(task)
 		var copy string
