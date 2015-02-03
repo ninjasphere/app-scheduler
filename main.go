@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/ninjasphere/app-scheduler/model"
+	"github.com/ninjasphere/app-scheduler/rest"
 	"github.com/ninjasphere/app-scheduler/service"
 	"github.com/ninjasphere/go-ninja/api"
 	"github.com/ninjasphere/go-ninja/support"
@@ -12,10 +13,15 @@ var (
 	info = ninja.LoadModuleInfo("./package.json")
 )
 
+type postConstructable interface {
+	PostConstruct() error
+}
+
 //SchedulerApp describes the scheduler application.
 type SchedulerApp struct {
 	support.AppSupport
-	service *service.SchedulerService
+	service    *service.SchedulerService
+	restServer rest.RestServer
 }
 
 // Start is called after the ExportApp call is complete.
@@ -35,15 +41,22 @@ func (a *SchedulerApp) Start(m *model.Schedule) error {
 	if err != nil {
 		return err
 	}
+
+	a.restServer.Scheduler = a.service
+	a.restServer.Start()
+
 	return nil
 }
 
 // Stop the scheduler module.
 func (a *SchedulerApp) Stop() error {
 	var err error
+
+	// TODO: stop the REST server
 	if a.service != nil {
 		tmp := a.service
 		a.service = nil
+		a.restServer.Stop()
 		err = tmp.Scheduler.Stop()
 	}
 	return err
