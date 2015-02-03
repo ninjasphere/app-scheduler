@@ -4,4 +4,4 @@ build-deps:
 
 unpack-build-deps:
 	rm -rf app/bower_components
-	tar -C app -xcf app-bower-components.tgz
+	tar -C app -xzf app-bower-components.tgz
