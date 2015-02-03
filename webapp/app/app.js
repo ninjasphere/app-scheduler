@@ -2,7 +2,8 @@
 
 // Declare app level module which depends on views, and components
 angular.module('schedulerApp', [
-  'ngRoute'
+  'ngRoute',
+  'ngResource'
 ])
 .factory('scheduler', [ '$resource', function($resource) {
 
