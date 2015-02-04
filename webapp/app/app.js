@@ -20,7 +20,7 @@ angular.module('schedulerApp', [
 						function(thing) {
 							var found = false
 							if (!thing.promoted || !thing.name || !thing.location) {
-								console.debug("skipping thing because not promoted, described or assigned to room", thing)
+								// console.debug("skipping thing because not promoted, described or assigned to room", thing)
 								return
 							}
 							angular.forEach(thing.device.channels, function(channel) {
