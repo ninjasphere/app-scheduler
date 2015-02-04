@@ -224,8 +224,21 @@ angular.module('schedulerApp', [
 		}
 
 		$scope.description = task.description
-		$scope.timeOfDay = task.window.after.param
 
+		switch (task.window.after.rule) {
+		case "sunrise":
+		case "sunset":
+		case "dawn":
+		case "dusk":
+			$scope.timeOfDay = task.window.after.rule
+			break;
+		case "time-of-day":
+			$scope.timeOfDay = task.window.after.param
+			break;
+		default:
+			console.debug("can't edit rule of type: ", task.window.after.rule)
+			return
+		}
 
 		angular.forEach(task.open, function(action) {
 			var thing = $scope.actionToModel(action)
@@ -243,29 +256,47 @@ angular.module('schedulerApp', [
 
 	$scope.save = function() {
 		$scope.message = ""
+		var rule, param
+
+		switch ($scope.timeOfDay) {
+		case "dawn":
+		case "dusk":
+		case "sunrise":
+		case "sunset":
+			rule = $scope.timeOfDay
+			param = ""
+			break
+		default:
+			rule = "time-of-day"
+			param = $scope.timeOfDay
+			break
+		}
+
+		var desc = (($scope.description == '') ? '@ '+$scope.timeOfDay : $scope.description )
+
+		var open = (function() {
+			var results = []
+			angular.forEach($scope.selectedThings, function(m) {
+				results.push(
+					{
+						"type": "thing-action",
+						"action": (m.on == "true" ? "turnOn" : "turnOff"),
+						"thingID": m.id
+					}
+				)
+			})
+			return results
+		}())
 
 		var task = {
 			"id": $routeParams["id"],
-			"description": (($scope.description == '') ? '@ '+$scope.timeOfDay : $scope.description ),
-			"open":
-				(function() {
-					var results = []
-					angular.forEach($scope.selectedThings, function(m) {
-						results.push(
-							{
-								"type": "thing-action",
-								"action": (m.on == "true" ? "turnOn" : "turnOff"),
-								"thingID": m.id
-							}
-						)
-					})
-					return results
-				}()),
+			"description": desc,
+			"open": open,
 			"close": [],
 			"window": {
 				"after": {
-					"rule": "time-of-day",
-					"param": $scope.timeOfDay
+					"rule": rule,
+					"param": param
 				},
 				"before": {
 					"rule": "delay",
