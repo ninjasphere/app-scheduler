@@ -257,8 +257,8 @@ angular.module('schedulerApp', [
 		db.save(task).then(
 			function() {
 				$location.path('/list')
-			}, function(r) {
-				$scope.message = message
+			}, function(m) {
+				$scope.message = m
 			})
 	}
 
