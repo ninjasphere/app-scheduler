@@ -329,6 +329,17 @@ angular.module('schedulerApp', [
 	$scope.cancel = function() {
 		$location.path('/list')
 	}
+
+	$scope.isDescriptionFrozen = false
+	$scope.freezeDescription = function() {
+		$scope.isDescriptionFrozen = true
+	}
+
+	$scope.$watch('timeOfDay', function() {
+		if (!$scope.isDescriptionFrozen) {
+			$scope.description = '@ '+$scope.timeOfDay
+		}
+	})
 }])
 .controller('TaskList', ['$scope', 'db', '$rootScope', function($scope, db, $rootScope) {
 	$scope.tasks = {}
