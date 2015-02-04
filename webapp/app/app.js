@@ -240,8 +240,8 @@ angular.module('schedulerApp', [
 						)
 					})
 					return results
-				}())
-			,
+				}()),
+			"close": [],
 			"window": {
 				"after": {
 					"rule": "time-of-day",
