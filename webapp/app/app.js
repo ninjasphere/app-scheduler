@@ -258,7 +258,12 @@ angular.module('schedulerApp', [
 			function() {
 				$location.path('/list')
 			}, function(m) {
-				$scope.message = m
+				if (m && m.data) {
+					$scope.message = m.data
+				} else {
+					$scope.message = "An error occurred."
+				}
+				console.debug(m)
 			})
 	}
 
@@ -267,7 +272,12 @@ angular.module('schedulerApp', [
 			function() {
 				$location.path('/list')
 			}, function(m) {
-				$scope.message = m
+				if (m && m.data) {
+					$scope.message = m.data
+				} else {
+					$scope.message = "An error occurred."
+				}
+				console.debug(m)
 			})
 	}
 
