@@ -5,13 +5,13 @@ angular.module('schedulerApp', [
   'ngRoute',
   'ngResource'
 ])
-.factory('db', [ '$resource', '$q', '$rootScope', function($resource, $q, $rootScope) {
+.factory('db', [ '$resource', '$q', '$rootScope', '$location', function($resource, $q, $rootScope, $location) {
 
 	var
-		Things = $resource("http://10.0.1.168:8000/rest/v1/things", {}),
-		Rooms = $resource("http://10.0.1.168:8000/rest/v1/rooms", {}),
-		Tasks = $resource("http://10.0.1.168:8100/rest/v1/tasks", {}),
-		Task = $resource("http://10.0.1.168:8100/rest/v1/tasks/:id", {}),
+		Things = $resource("http://"+$location.host()+":8000/rest/v1/things", {}),
+		Rooms = $resource("http://"+$location.host()+":8000/rest/v1/rooms", {}),
+		Tasks = $resource("http://"+$location.host()+":"+$location.port()+"/rest/v1/tasks", {}),
+		Task = $resource("http://"+$location.host()+":"+$location.port()+"/rest/v1/tasks/:id", {}),
 		refreshThings = function() {
 			return Things.get({}).$promise.then(
 				function(things) {
