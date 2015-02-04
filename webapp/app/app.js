@@ -129,6 +129,14 @@ angular.module('schedulerApp', [
 		return result
 	}
 
+	$scope.formatTime = function (date) {
+	    var h = date.getHours();
+	    var m = date.getMinutes();
+	    var s = date.getSeconds();
+	    var pad = function(d) { return d <= 9 ? '0'+d : d }
+	    return ''+pad(h)+":"+pad(m)+":"+pad(s)
+	}
+
 	$scope.actionToModel = function(action) {
 	    // {
         //    "action" : "turnOn",
@@ -202,11 +210,18 @@ angular.module('schedulerApp', [
 				$scope.selected = t["id"]
 			}
 		})
+
+		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
+		$scope.description = '@ '+$scope.timeOfDay
+
 		if (!task) {
 			return
 		}
+
 		$scope.description = task.description
 		$scope.timeOfDay = task.window.after.param
+
+
 		angular.forEach(task.open, function(action) {
 			var thing = $scope.actionToModel(action)
 			if (thing) {
@@ -226,7 +241,7 @@ angular.module('schedulerApp', [
 
 		var task = {
 			"id": $routeParams["id"],
-			"description": $scope.description,
+			"description": (($scope.description == '') ? '@ '+$scope.timeOfDay : $scope.description ),
 			"open":
 				(function() {
 					var results = []
