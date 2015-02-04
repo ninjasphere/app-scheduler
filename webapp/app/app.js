@@ -109,8 +109,13 @@ angular.module('schedulerApp', [
 		function(things) {
 			return things
 		},
-		function(err) {
-			$scope.message = err
+		function(m) {
+			if (m && m.data) {
+				$scope.message = m.data
+			} else {
+				$scope.message = "An error occurred."
+			}
+			console.debug("an error occurred while refreshing the model: ", m)
 		}
 	)
 }])
