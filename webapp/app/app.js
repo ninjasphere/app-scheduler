@@ -24,7 +24,7 @@ angular.module('schedulerApp', [
 								return
 							}
 							angular.forEach(thing.device.channels, function(channel) {
-								if (channel.supportedMethods && channel.supportedMethods.indexOf("turnOff") > 0) {
+								if (channel.supportedMethods && channel.supportedMethods.indexOf("turnOff") >= 0) {
 									found = true
 								}
 							})
