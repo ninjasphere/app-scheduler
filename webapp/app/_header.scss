@@ -21,7 +21,11 @@ header {
   }
 }
 
+html { height: 100%; }
+
 body {
   background: rgba(63,68,81, 0.8);
   font-family: 'Menlo';
+  height: calc(100% - 2rem);
 }
+

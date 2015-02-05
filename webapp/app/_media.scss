@@ -1,0 +1,10 @@
+
+
+@media screen and (max-width:600px) {
+  
+  .panel {
+    width: calc(100% - 2em);
+    @include border-radius(0px);
+    padding: 1em;
+  }
+}
