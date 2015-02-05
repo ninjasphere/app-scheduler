@@ -1,0 +1,130 @@
+
+// GLOBAL STYLES
+
+@import "header";
+@import "content";
+
+
+
+/* app css stylesheet */
+
+.menu {
+  list-style: none;
+  border-bottom: 0.1em solid black;
+  margin-bottom: 2em;
+  padding: 0 0 0.5em;
+}
+
+.menu:before {
+  content: "[";
+}
+
+.menu:after {
+  content: "]";
+}
+
+.menu > li {
+  display: inline;
+}
+
+.menu > li:before {
+  content: "|";
+  padding-right: 0.3em;
+}
+
+.menu > li:nth-child(1):before {
+  content: "";
+  padding: 0;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0px;
+
+  $listItemHeight: 3rem;
+  li {
+    padding: 0;
+    border-bottom: 1px solid #EEE;
+    display: block;
+    position: relative;
+    @include transition(all 0.1s ease-in-out);
+
+    > * {
+      line-height: $listItemHeight;
+    }
+  
+    .name {
+      padding-left: 0.5rem;
+    }
+    .edit {
+      float: right;
+      width: 70px;
+      text-align: center;
+      @include transition(all 0.1s ease-in-out);
+
+      &:hover {
+        color: white;
+        background-color: $ninjaPurple;
+      }
+    }
+
+    &:first-child {
+      border-top: 1px solid #EEE;
+    }
+
+    &:hover {
+      background-color: #EEE;
+    }
+  }
+}
+
+
+
+.things {
+  @include user-select(none);
+
+  $thingHeight: 40px;
+  .thing {
+    display: block;
+    border: 1px solid #EEE;
+    cursor: pointer;
+    position: relative;
+    height: $thingHeight;
+    color: #AAA;
+    @include border-radius(0.2rem);
+
+    .selector {
+      float: left;
+      width: $thingHeight;
+      height: 100%;
+      line-height: $thingHeight;
+      text-align: center;
+
+      input {
+        display: inline-block;
+        margin: 0 0 0 10px;
+      }
+    }
+
+    .name {
+      float: left;
+      line-height: $thingHeight;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .action {
+      float: right;
+      line-height: $thingHeight;
+      margin-right: 0.5rem;
+      width: 110px;
+    }
+
+    &.selected {
+      color: white;
+      background-color: $ninjaPurple;
+      border-color: hsl(251,40%,40%);
+      @include text-shadow(1px 1px 0px hsl(251,40%,24%));
+    }
+  }
+}

@@ -202,15 +202,15 @@ angular.module('schedulerApp', [
 		return result
 	}
 
-	$scope.selectedThings = {}
-	$scope.availableThings = {}
+	$scope.selectedThings = {};
+	$scope.availableThings = {};
 
 	$scope.task = function() {
 		return db.tasks[$routeParams["id"]]
 	}
 
 	$scope.$watch('task()', function(task) {
-		$scope.availableThings = {}
+		// $scope.availableThings = {}
 		angular.forEach(db.things, function(t) {
 			var m = $scope.thingToModel(t)
 			if (m) {
@@ -345,7 +345,7 @@ angular.module('schedulerApp', [
 	$scope.add = function() {
 		if ($scope.selected) {
 			$scope.selectedThings[$scope.selected] = $scope.availableThings[$scope.selected]
-			delete $scope.availableThings[$scope.selected]
+			// delete $scope.availableThings[$scope.selected] // JM Not needed
 			$scope.updateSelected()
 		}
 
@@ -379,7 +379,29 @@ angular.module('schedulerApp', [
 		if (!$scope.isDescriptionFrozen) {
 			$scope.description = '@ '+$scope.timeOfDay
 		}
-	})
+	});
+
+	$scope.toggleSelect = function(thing) {
+		if (thing.selected) {
+			// Remove it
+			delete $scope.selectedThings[thing.id];
+			thing.selected = false;
+		} else {
+			// Add it
+			$scope.selectedThings[thing.id] = thing;
+			thing.selected = true;
+		}
+	}
+
+	$scope.toggleActionState = function(thing) {
+		if (thing.on) {
+			// It's on, turn it off
+			thing.on = false;
+		} else {
+			// It's off, turn it on
+			thing.on = true;
+		}
+	}
 }])
 .controller('TaskList', ['$scope', 'db', '$rootScope', function($scope, db, $rootScope) {
 	$scope.tasks = {}

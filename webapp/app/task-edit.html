@@ -1,29 +1,28 @@
 <div>
-<dl>
-<dt>description</dt>
-<dd><input ng-model="description" ng-change="freezeDescription()"/></dd>
-<dt>time</dt>
-<dd><input ng-model="timeOfDay"/></dd>
-<dt>things</dt>
-<dd>
-<input type="button" value="add" ng-click="add()"/>
-<select ng-model="selected">
-	<option ng-repeat="thing in availableThings" value="{{thing.id}}">{{thing.description}} in {{thing.room}}</option>
-</select>
-<ul>
-	<li ng-repeat="thing in selectedThings">
-		<input type="checkbox" ng-model="thing.selected" ng-checked=""><label>{{thing.description}} in {{thing.room}}</label>
-		<input type="radio" ng-model="thing.on" value="true"/><label>on</label>
-		<input type="radio" ng-model="thing.on" value="false"/><label>off</label>
-	</li>
-</ul>
-<input type="button" value="remove"  ng-click="remove()"/>
-</dd>
-</dl>
+<label>description</label>
+<div class="field"><input ng-model="description" ng-change="freezeDescription()"/></div>
+<label>time</label>
+<div class="field"><input ng-model="timeOfDay"/></div>
+<label>choose things to action</label>
+<div>
+<div class="things">
+	<div ng-repeat="thing in availableThings" class="thing" ng-class="{selected: thing.selected}">
+    <div class="selector"><input type="checkbox" ng-model="thing.selected"></div>
+    <span class="name" ng-click="toggleSelect(thing)">{{thing.description}} in {{thing.room}}</span>
+    <div class="action" ng-click="toggleActionState(thing)">Turn It <strong>{{ thing.on ? "On" : "Off" }}</strong></div>
+	</div>
+</div>
+</div>
 <br/>
 
 <div>{{message}}</div>
-<input type="button" value="save" ng-click="save()"/>
-<input type="button" value="delete" ng-click="delete()"/>
-<input type="button" value="cancel" ng-click="cancel()"/>
+
+<div class="buttons">
+  
+</div>
+<div class="buttons">
+  <input type="button" class="button delete" value="delete" ng-click="delete()"/>
+  <input type="button" class="button right" value="save" ng-click="save()"/>
+  <input type="button" class="button cancel right" value="cancel" ng-click="cancel()"/>
+</div>
 </div>
