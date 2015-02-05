@@ -35,7 +35,7 @@ var clock Clock = &systemclock{
 }
 
 func (*systemclock) Now() time.Time {
-	return time.Now()
+	return time.Now().Truncate(defaultRounding)
 }
 
 func (*systemclock) AfterFunc(delay time.Duration, then func()) {

@@ -7,6 +7,7 @@ import (
 type mockclock struct {
 	systemclock
 	now       time.Time
+	jitter    time.Duration
 	callbacks map[time.Time][]callback
 }
 
@@ -20,11 +21,11 @@ func initMockClock(now time.Time) *mockclock {
 }
 
 func (m *mockclock) Now() time.Time {
-	return m.now
+	return m.now.Truncate(defaultRounding)
 }
 
 func (m *mockclock) SetNow(now time.Time) {
-	m.now = now
+	m.now = now.Add(m.jitter)
 	saved := make(map[time.Time][]callback)
 	for t, cbs := range m.callbacks {
 		if t.Sub(now) <= 0 {
