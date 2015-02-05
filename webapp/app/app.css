@@ -1,30 +1,198 @@
-/* app css stylesheet */
+header {
+  background: white;
+  border-bottom: 1px solid #ccc;
+  min-height: 60px;
+  margin-bottom: 2rem;
+  -moz-box-shadow: 0 2px 10px #3f4451;
+  -webkit-box-shadow: 0 2px 10px #3f4451;
+  box-shadow: 0 2px 10px #3f4451; }
+  header h1 {
+    font-family: 'Menlo';
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+    display: block;
+    text-align: center;
+    line-height: 60px; }
 
+body {
+  background: rgba(63, 68, 81, 0.8);
+  font-family: 'Menlo'; }
+
+.panel {
+  width: 500px;
+  margin: 0 auto;
+  min-height: 300px;
+  padding: 1em;
+  background-color: white;
+  position: relative;
+  -moz-border-radius: 1em;
+  -webkit-border-radius: 1em;
+  border-radius: 1em;
+  -moz-box-shadow: 0 2px 10px #3f4451;
+  -webkit-box-shadow: 0 2px 10px #3f4451;
+  box-shadow: 0 2px 10px #3f4451; }
+
+.buttons {
+  position: relative; }
+  .buttons .right {
+    float: right;
+    margin-left: 0.5rem; }
+
+.button {
+  text-align: center;
+  background-color: #6c5bb9;
+  border: 1px solid #5645a1;
+  color: white;
+  padding: 0.5rem;
+  text-decoration: none;
+  font-family: "Menlo";
+  font-size: 1rem;
+  -moz-border-radius: 0.5rem;
+  -webkit-border-radius: 0.5rem;
+  border-radius: 0.5rem;
+  -moz-transition: all 0.1s ease-in-out;
+  -o-transition: all 0.1s ease-in-out;
+  -webkit-transition: all 0.1s ease-in-out;
+  transition: all 0.1s ease-in-out; }
+  .button.cancel {
+    background-color: #cf8f20;
+    border-color: #a37119; }
+  .button.delete {
+    background-color: #707070; }
+  .button:hover {
+    color: #6c5bb9;
+    background-color: rgba(108, 91, 185, 0.2);
+    border: 1px solid #ccc6e7;
+    -moz-box-shadow: inset 0px 0px 15px 0px rgba(65, 52, 121, 0.3);
+    -webkit-box-shadow: inset 0px 0px 15px 0px rgba(65, 52, 121, 0.3);
+    box-shadow: inset 0px 0px 15px 0px rgba(65, 52, 121, 0.3);
+    text-shadow: 0px 0px 6px white; }
+    .button:hover.delete {
+      background-color: #cb1515;
+      color: white; }
+
+.button.full {
+  width: 100%;
+  padding: 1rem 0;
+  display: inline-block; }
+
+.field {
+  border: 1px solid #CCC;
+  -moz-border-radius: 0.2rem;
+  -webkit-border-radius: 0.2rem;
+  border-radius: 0.2rem;
+  padding: 0 0.5rem; }
+
+input {
+  width: 100%;
+  padding: 0.5rem 0;
+  font-family: "Menlo";
+  border: none;
+  outline: none; }
+  input.button {
+    display: inline-block;
+    width: auto; }
+    input.button.full {
+      width: 100%; }
+
+label {
+  margin-top: 1rem;
+  display: block;
+  color: #999; }
+
+/* app css stylesheet */
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;
   margin-bottom: 2em;
-  padding: 0 0 0.5em;
-}
+  padding: 0 0 0.5em; }
 
 .menu:before {
-  content: "[";
-}
+  content: "["; }
 
 .menu:after {
-  content: "]";
-}
+  content: "]"; }
 
 .menu > li {
-  display: inline;
-}
+  display: inline; }
 
 .menu > li:before {
   content: "|";
-  padding-right: 0.3em;
-}
+  padding-right: 0.3em; }
 
 .menu > li:nth-child(1):before {
   content: "";
-  padding: 0;
-}
+  padding: 0; }
+
+.task-list {
+  list-style: none;
+  padding: 0px; }
+  .task-list li {
+    padding: 0;
+    border-bottom: 1px solid #EEE;
+    display: block;
+    position: relative;
+    -moz-transition: all 0.1s ease-in-out;
+    -o-transition: all 0.1s ease-in-out;
+    -webkit-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out; }
+    .task-list li > * {
+      line-height: 3rem; }
+    .task-list li .name {
+      padding-left: 0.5rem; }
+    .task-list li .edit {
+      float: right;
+      width: 70px;
+      text-align: center;
+      -moz-transition: all 0.1s ease-in-out;
+      -o-transition: all 0.1s ease-in-out;
+      -webkit-transition: all 0.1s ease-in-out;
+      transition: all 0.1s ease-in-out; }
+      .task-list li .edit:hover {
+        color: white;
+        background-color: #6c5bb9; }
+    .task-list li:first-child {
+      border-top: 1px solid #EEE; }
+    .task-list li:hover {
+      background-color: #EEE; }
+
+.things {
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none; }
+  .things .thing {
+    display: block;
+    border: 1px solid #EEE;
+    cursor: pointer;
+    position: relative;
+    height: 40px;
+    color: #AAA;
+    -moz-border-radius: 0.2rem;
+    -webkit-border-radius: 0.2rem;
+    border-radius: 0.2rem; }
+    .things .thing .selector {
+      float: left;
+      width: 40px;
+      height: 100%;
+      line-height: 40px;
+      text-align: center; }
+      .things .thing .selector input {
+        display: inline-block;
+        margin: 0 0 0 10px; }
+    .things .thing .name {
+      float: left;
+      line-height: 40px;
+      overflow: hidden;
+      text-overflow: ellipsis; }
+    .things .thing .action {
+      float: right;
+      line-height: 40px;
+      margin-right: 0.5rem;
+      width: 110px; }
+    .things .thing.selected {
+      color: white;
+      background-color: #6c5bb9;
+      border-color: #4c3d8f;
+      text-shadow: 1px 1px 0px #2e2556; }

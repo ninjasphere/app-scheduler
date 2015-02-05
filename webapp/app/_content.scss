@@ -1,0 +1,104 @@
+$fontFamily: 'Menlo';
+$ninjaPurple: hsl(251,40%,54%);
+
+$panelWidth: 500px;
+$panelInnerPadding: 1em;
+$panelBackground: white;
+$panelBorder: 1px solid rgba(63,68,81, 1);
+
+.panel {
+  width: $panelWidth;
+  margin: 0 auto;
+  min-height: 300px;
+  padding: $panelInnerPadding;
+  background-color: $panelBackground;
+  position: relative;
+  @include border-radius(1em);
+  @include box-shadow(0 2px 10px rgba(63,68,81, 1));
+}
+
+
+// BUTTONS
+.buttons {
+  position: relative;
+
+  .right {
+    float: right;
+    margin-left: 0.5rem;
+  }
+}
+
+.button {
+  text-align: center;
+  background-color: $ninjaPurple;
+  border: 1px solid hsl(251,40%,45%);
+  color: white;
+  padding: 0.5rem;
+  text-decoration: none;
+  font-family: $fontFamily;
+  font-size: 1rem;
+  @include border-radius(0.5rem);
+  @include transition(all 0.1s ease-in-out);
+
+  &.cancel {
+    background-color: hsl(38,73%,47%);
+    border-color: hsl(38,73%,37%);
+  }
+
+  &.delete {
+    background-color: hsl(360,0%,44%);
+  }
+
+  &:hover {
+    color: $ninjaPurple;
+    background-color: hsla(251,40%,54%, 0.2);
+    border: 1px solid hsl(251,40%,84%);
+    @include box-shadow(inset 0px 0px 15px 0px hsla(251,40%,34%,0.3));
+    @include text-shadow(0px 0px 6px white);
+
+    &.delete { background-color: hsl(360,81%,44%); color: white }
+  }
+}
+
+.button.full {
+  width: 100%;
+  padding: 1rem 0;
+  display: inline-block;
+
+  &:hover {
+  }
+}
+
+
+
+// FORM
+.field {
+  border: 1px solid #CCC;
+  @include border-radius(0.2rem);
+  padding: 0 0.5rem;
+}
+
+// INPUT TEXT
+input {
+  width: 100%;
+  padding: 0.5rem 0;
+  font-family: $fontFamily;
+  border: none;
+  outline: none;
+
+  &.button {
+    display: inline-block;
+    width: auto;
+
+    &.full {
+      width: 100%;
+    }
+  }
+}
+
+
+label {
+  margin-top: 1rem;
+  display: block;
+  color: #999;
+}

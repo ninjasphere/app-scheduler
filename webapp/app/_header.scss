@@ -1,0 +1,27 @@
+@import "compass/css3";
+
+// HEADER
+
+$headerHeight: 60px;
+header {
+  background: white;
+  border-bottom: 1px solid #ccc;
+  min-height: $headerHeight;
+  margin-bottom: 2rem;
+  @include box-shadow(0 2px 10px rgba(63,68,81, 1));
+
+  h1 {
+    font-family: 'Menlo';
+    font-size: 1em;
+    margin: 0;
+    padding: 0;
+    display: block;
+    text-align: center;
+    line-height: $headerHeight;
+  }
+}
+
+body {
+  background: rgba(63,68,81, 0.8);
+  font-family: 'Menlo';
+}
