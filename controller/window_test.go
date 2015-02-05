@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/ninjasphere/app-scheduler/model"
 	"testing"
+	"time"
 )
 
 func TestBadInitNil(t *testing.T) {
@@ -131,4 +132,58 @@ func TestNeverNowWindow(t *testing.T) {
 	if stub.isPermanentlyClosed(testTime) {
 		t.Fatalf("neverNowWindow.isPermanentlyClosed() was %v, wanted %v", true, false)
 	}
+}
+
+func Test20150205(t *testing.T) {
+
+	scheduledAt := time.Date(2015, 02, 05, 12, 47, 30, 337083531, time.Now().Location())
+	// exactTime := time.Date(2015, 02, 05, 12, 48, 24, 0, time.Now().Location())
+	ref := time.Date(2015, 02, 05, 12, 48, 24, 4585963, time.Now().Location())
+
+	testWindow := &model.Window{
+		After: &model.Event{
+			Rule:  "time-of-day",
+			Param: "12:48:24",
+		},
+		Before: &model.Event{
+			Rule:  "delay",
+			Param: "00:01:00",
+		},
+	}
+
+	mockClock := initMockClock(scheduledAt, defaultJitter)
+	stub := &window{}
+	stub.init(testWindow)
+
+	if stub.isPermanentlyClosed(scheduledAt) {
+		t.Fatalf("was %v, wanted %v", true, false)
+	}
+
+	if stub.isOpen(scheduledAt, scheduledAt) {
+		t.Fatalf("was %v, wanted %v", true, false)
+	}
+
+	wakeup := make(chan time.Time)
+
+	go func() {
+		done := stub.whenOpen(scheduledAt)
+
+		select {
+		case openSignal := <-done:
+			wakeup <- openSignal
+		}
+	}()
+
+	mockClock.SetNow(ref)
+
+	now := <-wakeup
+
+	if stub.isPermanentlyClosed(now) {
+		t.Fatalf("was %v, wanted %v", true, false)
+	}
+
+	if !stub.isOpen(scheduledAt, now) {
+		t.Fatalf("was %v, wanted %v", false, true)
+	}
+
 }
