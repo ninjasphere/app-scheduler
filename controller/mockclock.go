@@ -35,6 +35,7 @@ func (m *mockclock) SetNow(now time.Time) {
 				cb()
 			}
 		} else {
+			log.Debugf("keeping event for %v because time is now %v", t, now)
 			saved[t] = cbs
 		}
 	}
