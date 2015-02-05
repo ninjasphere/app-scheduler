@@ -39,21 +39,43 @@ func (w *window) isPermanentlyClosed(ref time.Time) bool {
 func (w *window) isOpen(scheduledAt time.Time, ref time.Time) bool {
 	openWaitsForTime := w.after.hasTimestamp()
 
+	var (
+		afterTimestamp time.Time
+		beforeOccurred bool
+		result         bool
+	)
+
+	afterOccurred := w.after.hasEventOccurred(scheduledAt, ref)
+
 	if openWaitsForTime {
 
 		// when both events are timestamp based, check
 		// that the reference timestamp is within the boundaries
 		// of those timestamp
 
-		return w.after.hasEventOccurred(scheduledAt, ref) &&
-			!w.before.hasEventOccurred(w.after.asTimestamp(scheduledAt), ref)
+		afterTimestamp = w.after.asTimestamp(scheduledAt)
+		beforeOccurred = w.before.hasEventOccurred(afterTimestamp, ref)
+	} else {
+		afterTimestamp = time.Now()
+		beforeOccurred = w.before.hasEventOccurred(scheduledAt, ref)
 	}
 
-	// when neither events are timestamp based, we have to
-	// wait to wait for the open event to know we are open
+	result = afterOccurred && !beforeOccurred
 
-	return w.after.hasEventOccurred(scheduledAt, ref) &&
-		!w.before.hasEventOccurred(scheduledAt, ref)
+	if log.IsDebugEnabled() {
+		log.Debugf(
+			"%v isOpen(scheduledAt=%v, ref=%v) openWaitsForTime=%v, afterOccurred=%v, afterTimestamp=%v, beforeOccurred=%v, result=%v",
+			w,
+			scheduledAt,
+			ref,
+			openWaitsForTime,
+			afterOccurred,
+			afterTimestamp,
+			beforeOccurred,
+			result)
+	}
+	return result
+
 }
 
 // Answer a channel that will receive an event when the next open event occurs.
