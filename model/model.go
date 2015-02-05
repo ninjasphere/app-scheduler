@@ -49,6 +49,7 @@ type Window struct {
 // then runs the Close actions. If the Window is a recurring window, then the cycle repeats, otherwise the Task ends.
 type Task struct {
 	ID          string    `json:"id,omitempty"`
+	Tags        []string  `json:"tags,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Window      *Window   `json:"window,omitempty"`
 	Open        []*Action `json:"open,omitempty"`
