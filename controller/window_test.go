@@ -36,7 +36,7 @@ func TestBadInitBeforeNil(t *testing.T) {
 }
 
 func runNonOverlappingWindow(t *testing.T, m *model.Window, permanentlyClosed bool) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	stub := &window{}
 	err := stub.init(m)
 	if err != nil {
@@ -51,7 +51,7 @@ func runNonOverlappingWindow(t *testing.T, m *model.Window, permanentlyClosed bo
 }
 
 func runOverlappingWindow(t *testing.T, m *model.Window) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	stub := &window{}
 	err := stub.init(m)
 	if err != nil {
@@ -106,7 +106,7 @@ func TestSunriseSunsetWindow(t *testing.T) {
 }
 
 func TestNowNeverWindow(t *testing.T) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	stub := &window{}
 	if err := stub.init(nowNeverWindow); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -120,7 +120,7 @@ func TestNowNeverWindow(t *testing.T) {
 }
 
 func TestNeverNowWindow(t *testing.T) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	stub := &window{}
 	if err := stub.init(neverNowWindow); err != nil {
 		t.Fatalf("unexpected error: %v", err)

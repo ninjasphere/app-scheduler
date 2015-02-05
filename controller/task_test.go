@@ -7,7 +7,7 @@ import (
 )
 
 func TestTaskRespectsClosedWindows(t *testing.T) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	task := &task{}
 	actuations := make(chan actuationRequest, 2)
 	if err := task.init(taskWithEarlierTimeOfDayOpenDelayCloseWindow, actuations); err != nil {
@@ -27,7 +27,7 @@ func TestTaskRespectsClosedWindows(t *testing.T) {
 }
 
 func TestTaskRespectsPermanentlyClosedWindows(t *testing.T) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	task := &task{}
 	actuations := make(chan actuationRequest, 2)
 	if err := task.init(taskWithEarlierTimestampOpenDelayCloseWindow, actuations); err != nil {
@@ -54,7 +54,7 @@ func TestTaskRespectsPermanentlyClosedWindows(t *testing.T) {
 }
 
 func TestTaskWith2DelayEvents(t *testing.T) {
-	mockClock := initMockClock(testTime)
+	mockClock := initMockClock(testTime, defaultJitter)
 	task := &task{}
 	actuations := make(chan actuationRequest, 2)
 	if err := task.init(taskWithTwoDelayEvents, actuations); err != nil {

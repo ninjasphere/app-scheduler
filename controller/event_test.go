@@ -25,7 +25,7 @@ func assertNotFired(t *testing.T, whenDone chan time.Time) {
 }
 
 func runBogus(t *testing.T, e *model.Event) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	event, err := newEvent(e, false)
 	if err == nil {
 		t.Fatalf("expecting error but none found for %+v", *e)
@@ -36,7 +36,7 @@ func runBogus(t *testing.T, e *model.Event) {
 }
 
 func runBeforeNow(t *testing.T, e *model.Event, close bool, clockTime bool) {
-	initMockClock(testTime)
+	initMockClock(testTime, defaultJitter)
 	event, err := newEvent(e, close)
 	if err != nil {
 		t.Fatalf("unexpected error on newEvent %s", err)
@@ -63,7 +63,7 @@ func runBeforeNow(t *testing.T, e *model.Event, close bool, clockTime bool) {
 }
 
 func runAfterNow(t *testing.T, e *model.Event, close bool, shouldFireInFuture bool) {
-	mock := initMockClock(testTime)
+	mock := initMockClock(testTime, defaultJitter)
 	event, err := newEvent(e, close)
 	if err != nil {
 		t.Fatalf("unexpected error on newEvent %s", err)
@@ -221,7 +221,7 @@ func TestNonRecurringEvents(t *testing.T) {
 }
 
 func TestThatTimeOfDayEventFiresAtMostOncePerDay(t *testing.T) {
-	mockClock := initMockClock(testTime)
+	mockClock := initMockClock(testTime, defaultJitter)
 	e, _ := newEvent(beforeNowTimeOfDayModel, false)
 	waiter := e.waiter(clock.Now())
 	<-waiter

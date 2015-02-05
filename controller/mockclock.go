@@ -11,9 +11,10 @@ type mockclock struct {
 	callbacks map[time.Time][]callback
 }
 
-func initMockClock(now time.Time) *mockclock {
+func initMockClock(now time.Time, jitter time.Duration) *mockclock {
 	mock := &mockclock{
-		now:       now,
+		now:       now.Add(jitter),
+		jitter:    jitter,
 		callbacks: make(map[time.Time][]callback),
 	}
 	clock = mock
