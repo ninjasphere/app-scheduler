@@ -15,9 +15,21 @@ header {
     text-align: center;
     line-height: 60px; }
 
+html {
+  height: 100%; }
+
 body {
   background: rgba(63, 68, 81, 0.8);
-  font-family: 'Menlo'; }
+  font-family: 'Menlo';
+  height: calc(100% - 2rem); }
+
+footer {
+  text-align: center;
+  width: 100%;
+  padding: 0.5rem;
+  height: 2rem;
+  line-height: 2rem;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.1); }
 
 .panel {
   width: 500px;
@@ -101,6 +113,13 @@ label {
   display: block;
   color: #999; }
 
+@media screen and (max-width: 600px) {
+  .panel {
+    width: calc(100% - 2em);
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    border-radius: 0px;
+    padding: 1em; } }
 /* app css stylesheet */
 .menu {
   list-style: none;
