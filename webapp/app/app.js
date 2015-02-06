@@ -195,11 +195,11 @@ angular.module('schedulerApp', [
 			return null
 		}
 		result.room = room.name
+		result.selected = true
 
 		return result
 	}
 
-	$scope.selectedThings = {};
 	$scope.actionModels = {};
 
 	$scope.task = function() {
@@ -241,12 +241,11 @@ angular.module('schedulerApp', [
 		}
 
 		angular.forEach(task.open, function(action) {
-			var thing = $scope.actionToModel(action)
-			if (thing) {
-				$scope.selectedThings[thing.id] = thing
-				delete $scope.actionModels[thing.id]
+			var model = $scope.actionToModel(action)
+			if (model && $scope.actionModels[model.id]) {
+				$scope.actionModels[model.id] = model
 			} else {
-				console.debug(action)
+				console.debug("found an action for a thing that no longer exists: ", action)
 			}
 		})
 	})
@@ -275,14 +274,16 @@ angular.module('schedulerApp', [
 
 		var open = (function() {
 			var results = []
-			angular.forEach($scope.selectedThings, function(m) {
-				results.push(
-					{
-						"type": "thing-action",
-						"action": (m.on == "true" ? "turnOn" : "turnOff"),
-						"thingID": m.id
-					}
-				)
+			angular.forEach($scope.actionModels, function(m) {
+				if (m.selected) {
+					results.push(
+						{
+							"type": "thing-action",
+							"action": (m.on == "true" ? "turnOn" : "turnOff"),
+							"thingID": m.id
+						}
+					)
+				}
 			})
 			return results
 		}())
