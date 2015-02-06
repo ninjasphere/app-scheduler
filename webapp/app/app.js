@@ -379,14 +379,8 @@ angular.module('schedulerApp', [
 		}
 	}
 
-	$scope.toggleActionState = function(thing) {
-		if (thing.on) {
-			// It's on, turn it off
-			thing.on = false;
-		} else {
-			// It's off, turn it on
-			thing.on = true;
-		}
+	$scope.toggleActionState = function(model) {
+		model.on = ! model.on
 	}
 }])
 .controller('TaskList', ['$scope', 'db', '$rootScope', function($scope, db, $rootScope) {
