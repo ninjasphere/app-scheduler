@@ -328,6 +328,10 @@ angular.module('schedulerApp', [
 		model.on = ! model.on
 	}
 
+	$scope.setRepeatDaily = function(value) {
+		$scope.repeatDaily = value;
+	}
+
 	$scope.$watch('task()', function(task) {
 		angular.forEach(db.things, function(t) {
 			var m = $scope.thingToModel(t)

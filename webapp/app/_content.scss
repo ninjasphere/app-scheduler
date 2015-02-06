@@ -19,15 +19,6 @@ $panelBorder: 1px solid rgba(63,68,81, 1);
 
 
 // BUTTONS
-.buttons {
-  position: relative;
-
-  .right {
-    float: right;
-    margin-left: 0.5rem;
-  }
-}
-
 .button {
   text-align: center;
   background-color: $ninjaPurple;
@@ -37,6 +28,7 @@ $panelBorder: 1px solid rgba(63,68,81, 1);
   text-decoration: none;
   font-family: $fontFamily;
   font-size: 1rem;
+  cursor: pointer;
   @include border-radius(0.5rem);
   @include transition(all 0.1s ease-in-out);
 
@@ -68,6 +60,44 @@ $panelBorder: 1px solid rgba(63,68,81, 1);
   &:hover {
   }
 }
+
+.buttons {
+  position: relative;
+
+  .right {
+    float: right;
+    margin-left: 0.5rem;
+  }
+
+  &.toggle-button {
+    .button {
+      width: calc(50% - 2px);
+      float: left;
+      padding-left: 0px;
+      padding-right: 0px;
+      background-color: hsla(251,40%,54%, 0.2);
+      border-color: hsl(251,40%,84%);
+      color: #BBB;
+
+      &.selected {
+        background-color: $ninjaPurple;
+        border-color: hsl(251,40%,45%);
+        color: white;
+      }
+
+      &:first-child {
+        @include border-radius(0.5rem 0 0 0.5rem);
+
+      }
+
+      &:last-child {
+        @include border-radius(0 0.5rem 0.5rem 0);
+      }
+    }
+  }
+}
+
+
 
 
 
