@@ -380,6 +380,7 @@ angular.module('schedulerApp', [
 				$scope.timeOfDay = $scope.formatTime(ts)
 				$scope.repeatDaily = false
 			}
+			break;
 		default:
 			console.debug("can't edit rule of type: ", task.window.after.rule)
 			return
