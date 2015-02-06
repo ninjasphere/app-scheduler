@@ -1,0 +1,2 @@
+nservice -q app-scheduler stop || true
+nservice -q app-scheduler start || true
