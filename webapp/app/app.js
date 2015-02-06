@@ -249,7 +249,6 @@ angular.module('schedulerApp', [
 				console.debug(action)
 			}
 		})
-		$scope.updateSelected()
 	})
 
 	$scope.selected = null
@@ -332,17 +331,9 @@ angular.module('schedulerApp', [
 			})
 	}
 
-	$scope.updateSelected = function() {
-		$scope.selected = null
-		angular.forEach($scope.actionModels, function(m) {
-			$scope.selected = m.id
-		})
-	}
 	$scope.add = function() {
 		if ($scope.selected) {
 			$scope.selectedThings[$scope.selected] = $scope.actionModels[$scope.selected]
-			// delete $scope.actionModels[$scope.selected] // JM Not needed
-			$scope.updateSelected()
 		}
 
 	}
@@ -359,7 +350,6 @@ angular.module('schedulerApp', [
 			delete $scope.selectedThings[id]
 			$scope.actionModels[id] = m
 		})
-		$scope.updateSelected()
 	}
 
 	$scope.cancel = function() {
