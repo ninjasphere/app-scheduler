@@ -123,6 +123,7 @@ angular.module('schedulerApp', [
 
 	$scope.actionModels = {};
 	$scope.isDescriptionFrozen = false
+	$scope.repeatDaily = true
 
 	$scope.thingToModel = function(thing) {
 		var result = {}
@@ -143,6 +144,14 @@ angular.module('schedulerApp', [
 	    var s = date.getSeconds();
 	    var pad = function(d) { return d <= 9 ? '0'+d : d }
 	    return ''+pad(h)+":"+pad(m)+":"+pad(s)
+	}
+
+	$scope.formatDate = function (date) {
+	    var y = date.getFullYear();
+	    var m = date.getMonth()+1;
+	    var d = date.getDate();
+	    var pad = function(d) { return d <= 9 ? '0'+d : d }
+	    return ''+y+"-"+pad(m)+"-"+pad(d)
 	}
 
 	$scope.actionToModel = function(action) {
@@ -220,8 +229,24 @@ angular.module('schedulerApp', [
 			param = ""
 			break
 		default:
-			rule = "time-of-day"
-			param = $scope.timeOfDay
+			var
+				now = new Date(),
+				ts = new Date($scope.formatDate(now)+" "+$scope.timeOfDay)
+
+			if (!ts.getFullYear()) {
+				$scope.message = "enter a time of the form hh:mm:dd"
+			} else {
+				if (ts < now) {
+					ts.setDate(ts.getDate()+1)
+				}
+				if ($scope.repeatDaily) {
+					rule = "time-of-day"
+					param = $scope.formatTime(ts)
+				} else {
+					rule = "timestamp"
+					param = $scope.formatDate(ts) + " " + $scope.formatTime(ts)
+				}
+			}
 			break
 		}
 
@@ -313,12 +338,22 @@ angular.module('schedulerApp', [
 
 		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
 		$scope.description = '@ '+$scope.timeOfDay
+		$scope.repeatDaily = true
 
 		if (!task) {
 			return
 		}
 
 		$scope.description = task.description
+
+		angular.forEach(task.open, function(action) {
+			var model = $scope.actionToModel(action)
+			if (model && $scope.actionModels[model.id]) {
+				$scope.actionModels[model.id] = model
+			} else {
+				console.debug("found an action for a thing that no longer exists: ", action)
+			}
+		})
 
 		switch (task.window.after.rule) {
 		case "sunrise":
@@ -330,19 +365,17 @@ angular.module('schedulerApp', [
 		case "time-of-day":
 			$scope.timeOfDay = task.window.after.param
 			break;
+		case "timestamp":
+			var ts = new Date(task.window.after.param)
+			if (ts.getFullYear()) {
+				$scope.timeOfDay = $scope.formatTime(ts)
+				$scope.repeatDaily = false
+			}
 		default:
 			console.debug("can't edit rule of type: ", task.window.after.rule)
 			return
 		}
 
-		angular.forEach(task.open, function(action) {
-			var model = $scope.actionToModel(action)
-			if (model && $scope.actionModels[model.id]) {
-				$scope.actionModels[model.id] = model
-			} else {
-				console.debug("found an action for a thing that no longer exists: ", action)
-			}
-		})
 	})
 
 	$scope.$watch('timeOfDay', function() {
