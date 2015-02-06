@@ -346,16 +346,8 @@ angular.module('schedulerApp', [
 		}
 	});
 
-	$scope.toggleSelect = function(thing) {
-		if (thing.selected) {
-			// Remove it
-			delete $scope.selectedThings[thing.id];
-			thing.selected = false;
-		} else {
-			// Add it
-			$scope.selectedThings[thing.id] = thing;
-			thing.selected = true;
-		}
+	$scope.toggleSelect = function(model) {
+		model.selected = !model.selected
 	}
 
 	$scope.toggleActionState = function(model) {
