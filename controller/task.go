@@ -78,6 +78,12 @@ func (t *task) loop() bool {
 				break
 			} else {
 				var quit bool
+				if t.window.after.hasEventOccurred(scheduledAt, now) {
+					t.window.after.setLastFired(now)
+				}
+				if t.window.before.hasEventOccurred(scheduledAt, now) {
+					t.window.before.setLastFired(now)
+				}
 				quit, now = t.waitForOpenEvent(scheduledAt)
 				if quit {
 					return false
@@ -85,6 +91,7 @@ func (t *task) loop() bool {
 			}
 		}
 
+		t.window.after.setLastFired(now)
 		t.status = statusExecutingOpen
 
 		t.doActions("open", t.openers)
@@ -95,6 +102,7 @@ func (t *task) loop() bool {
 			return false
 		}
 
+		t.window.before.setLastFired(now)
 		t.status = statusExecutingClose
 
 		t.doActions("close", t.closers)

@@ -22,9 +22,8 @@ type Event interface {
 	hasEventOccurred(                    // Answer true if the event scheduled at scheduledAt has occurred by ref
 		scheduledAt time.Time,
 		ref time.Time) bool
-	// Answer true if the final event of this type has occurred. Not true for
-	// recurring events or for non-recurring events whose timestamp is less than the reference timestamp.
-	hasFinalEventOccurred(ref time.Time) bool
+	hasFinalEventOccurred(ref time.Time) bool // Answer true if the final event of this type has occurred. Not true for recurring events or for non-recurring events whose timestamp is less than the reference timestamp.
+	setLastFired(ref time.Time)               // set time that the event fired
 }
 
 type never struct {
@@ -234,11 +233,9 @@ func (t *timeEvent) waiter(ref time.Time) chan time.Time {
 		if delay > 0 {
 			log.Debugf("waiting now (%v) for an event at (%v)", clock.Now(), when)
 			clock.AfterFunc(delay, func() {
-				t.lastFired = clock.Now()
 				waiter <- t.lastFired
 			})
 		} else {
-			t.lastFired = now
 			waiter <- now
 			log.Debugf("waiter fired event because time already passed %v", clock.Now())
 		}
@@ -246,6 +243,10 @@ func (t *timeEvent) waiter(ref time.Time) chan time.Time {
 		log.Warningf("this waiter will block forever because the event @ %v was already fired at %v", delay, t.lastFired)
 	}
 	return waiter
+}
+
+func (t *timeEvent) setLastFired(ref time.Time) {
+	t.lastFired = ref
 }
 
 // Return the parsed timestamp.
@@ -325,4 +326,7 @@ func (*never) hasEventOccurred(scheduledAt time.Time, ref time.Time) bool {
 
 func (*never) hasFinalEventOccurred(ref time.Time) bool {
 	return false
+}
+
+func (t *never) setLastFired(ref time.Time) {
 }
