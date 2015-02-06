@@ -53,9 +53,21 @@ angular.module('schedulerApp', [
 				function(tasks) {
 					service.tasks = {}
 					angular.forEach(tasks.schedule, function(task) {
+
 						if (!task.tags || task.tags.indexOf("simple-ui") < 0) {
 							return;
 						}
+
+						if (task.window.after.rule == 'timestamp') {
+							var
+								now = new Date(),
+								ts = new Date(task.window.after.param)
+							if (! ts.getFullYear() || ts < now) {
+								// console.debug("skipping expired or invalid task")
+								return
+							}
+						}
+
 						if (task.description && task.description != '') {
 							service.tasks[task["id"]] = task
 						}
@@ -124,6 +136,10 @@ angular.module('schedulerApp', [
 }])
 .controller('TaskEdit', ['$scope', '$location', 'db', '$routeParams', function($scope, $location, db, $routeParams) {
 
+	$scope.actionModels = {};
+	$scope.isDescriptionFrozen = false
+	$scope.repeatDaily = true
+
 	$scope.thingToModel = function(thing) {
 		var result = {}
 		result.id = thing.id
@@ -143,6 +159,14 @@ angular.module('schedulerApp', [
 	    var s = date.getSeconds();
 	    var pad = function(d) { return d <= 9 ? '0'+d : d }
 	    return ''+pad(h)+":"+pad(m)+":"+pad(s)
+	}
+
+	$scope.formatDate = function (date) {
+	    var y = date.getFullYear();
+	    var m = date.getMonth()+1;
+	    var d = date.getDate();
+	    var pad = function(d) { return d <= 9 ? '0'+d : d }
+	    return ''+y+"-"+pad(m)+"-"+pad(d)
 	}
 
 	$scope.actionToModel = function(action) {
@@ -203,55 +227,9 @@ angular.module('schedulerApp', [
 		return result
 	}
 
-	$scope.actionModels = {};
-
 	$scope.task = function() {
 		return db.tasks[$routeParams["id"]]
 	}
-
-	$scope.$watch('task()', function(task) {
-		angular.forEach(db.things, function(t) {
-			var m = $scope.thingToModel(t)
-			if (m) {
-				$scope.actionModels[t["id"]] = m
-			}
-		})
-
-		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
-		$scope.description = '@ '+$scope.timeOfDay
-
-		if (!task) {
-			return
-		}
-
-		$scope.description = task.description
-
-		switch (task.window.after.rule) {
-		case "sunrise":
-		case "sunset":
-		case "dawn":
-		case "dusk":
-			$scope.timeOfDay = task.window.after.rule
-			break;
-		case "time-of-day":
-			$scope.timeOfDay = task.window.after.param
-			break;
-		default:
-			console.debug("can't edit rule of type: ", task.window.after.rule)
-			return
-		}
-
-		angular.forEach(task.open, function(action) {
-			var model = $scope.actionToModel(action)
-			if (model && $scope.actionModels[model.id]) {
-				$scope.actionModels[model.id] = model
-			} else {
-				console.debug("found an action for a thing that no longer exists: ", action)
-			}
-		})
-	})
-
-	$scope.selected = null
 
 	$scope.save = function() {
 		$scope.message = ""
@@ -266,8 +244,25 @@ angular.module('schedulerApp', [
 			param = ""
 			break
 		default:
-			rule = "time-of-day"
-			param = $scope.timeOfDay
+			var
+				now = new Date(),
+				ts = new Date($scope.formatDate(now)+" "+$scope.timeOfDay)
+
+			if (!ts.getFullYear()) {
+				$scope.message = "enter a time of the form hh:mm:dd"
+				return
+			} else {
+				if (ts < now) {
+					ts.setDate(ts.getDate()+1)
+				}
+				if ($scope.repeatDaily) {
+					rule = "time-of-day"
+					param = $scope.formatTime(ts)
+				} else {
+					rule = "timestamp"
+					param = $scope.formatDate(ts) + " " + $scope.formatTime(ts)
+				}
+			}
 			break
 		}
 
@@ -338,16 +333,9 @@ angular.module('schedulerApp', [
 		$location.path('/list')
 	}
 
-	$scope.isDescriptionFrozen = false
 	$scope.freezeDescription = function() {
 		$scope.isDescriptionFrozen = true
 	}
-
-	$scope.$watch('timeOfDay', function() {
-		if (!$scope.isDescriptionFrozen) {
-			$scope.description = '@ '+$scope.timeOfDay
-		}
-	});
 
 	$scope.toggleSelect = function(model) {
 		model.selected = !model.selected
@@ -356,6 +344,80 @@ angular.module('schedulerApp', [
 	$scope.toggleActionState = function(model) {
 		model.on = ! model.on
 	}
+
+	$scope.setRepeatDaily = function(value) {
+		$scope.repeatDaily = value;
+	}
+
+	$scope.$watch('task()', function(task) {
+		angular.forEach(db.things, function(t) {
+			var m = $scope.thingToModel(t)
+			if (m) {
+				$scope.actionModels[t["id"]] = m
+			}
+		})
+
+		$scope.isDescriptionFrozen = false
+		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
+		$scope.description = '@ '+$scope.timeOfDay
+		$scope.repeatDaily = true
+
+		if (!task) {
+			// console.debug("new task", $scope)
+			return
+		}
+
+		$scope.isDescriptionFrozen = true
+		$scope.description = task.description
+
+		angular.forEach(task.open, function(action) {
+			var model = $scope.actionToModel(action)
+			if (model && $scope.actionModels[model.id]) {
+				$scope.actionModels[model.id] = model
+			} else {
+				console.debug("found an action for a thing that no longer exists: ", action)
+			}
+		})
+
+		switch (task.window.after.rule) {
+		case "sunrise":
+		case "sunset":
+		case "dawn":
+		case "dusk":
+			$scope.timeOfDay = task.window.after.rule
+			break;
+		case "time-of-day":
+			$scope.timeOfDay = task.window.after.param
+			break;
+		case "timestamp":
+			var ts = new Date(task.window.after.param)
+			if (ts.getFullYear()) {
+				$scope.timeOfDay = $scope.formatTime(ts)
+				$scope.repeatDaily = false
+			}
+			break;
+		default:
+			console.debug("can't edit rule of type: ", task.window.after.rule)
+			return
+		}
+
+		// the description is frozen iff the generated description does not match the saved description
+		$scope.isDescriptionFrozen = ($scope.description != '') && ($scope.description != $scope.generatedDescription())
+
+		// console.debug("loaded task", $scope)
+
+	})
+
+	$scope.generatedDescription = function() {
+		return '@ '+$scope.timeOfDay
+	}
+
+	$scope.$watch('timeOfDay', function() {
+		if (!$scope.isDescriptionFrozen) {
+			$scope.description = $scope.generatedDescription()
+		}
+	});
+
 }])
 .controller('TaskList', ['$scope', 'db', '$rootScope', function($scope, db, $rootScope) {
 	$scope.tasks = {}

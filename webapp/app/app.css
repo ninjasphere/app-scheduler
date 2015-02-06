@@ -45,12 +45,6 @@ footer {
   -webkit-box-shadow: 0 2px 10px #3f4451;
   box-shadow: 0 2px 10px #3f4451; }
 
-.buttons {
-  position: relative; }
-  .buttons .right {
-    float: right;
-    margin-left: 0.5rem; }
-
 .button {
   text-align: center;
   background-color: #6c5bb9;
@@ -60,13 +54,18 @@ footer {
   text-decoration: none;
   font-family: "Menlo";
   font-size: 1rem;
+  cursor: pointer;
   -moz-border-radius: 0.5rem;
   -webkit-border-radius: 0.5rem;
   border-radius: 0.5rem;
   -moz-transition: all 0.1s ease-in-out;
   -o-transition: all 0.1s ease-in-out;
   -webkit-transition: all 0.1s ease-in-out;
-  transition: all 0.1s ease-in-out; }
+  transition: all 0.1s ease-in-out;
+  -moz-user-select: -moz-none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none; }
   .button.cancel {
     background-color: #cf8f20;
     border-color: #a37119; }
@@ -88,6 +87,32 @@ footer {
   width: 100%;
   padding: 1rem 0;
   display: inline-block; }
+
+.buttons {
+  position: relative; }
+  .buttons .right {
+    float: right;
+    margin-left: 0.5rem; }
+  .buttons.toggle-button .button {
+    width: calc(50% - 2px);
+    float: left;
+    padding-left: 0px;
+    padding-right: 0px;
+    background-color: rgba(108, 91, 185, 0.2);
+    border-color: #ccc6e7;
+    color: #BBB; }
+    .buttons.toggle-button .button.selected {
+      background-color: #6c5bb9;
+      border-color: #5645a1;
+      color: white; }
+    .buttons.toggle-button .button:first-child {
+      -moz-border-radius: 0.5rem 0 0 0.5rem;
+      -webkit-border-radius: 0.5rem;
+      border-radius: 0.5rem 0 0 0.5rem; }
+    .buttons.toggle-button .button:last-child {
+      -moz-border-radius: 0 0.5rem 0.5rem 0;
+      -webkit-border-radius: 0;
+      border-radius: 0 0.5rem 0.5rem 0; }
 
 .field {
   border: 1px solid #CCC;
