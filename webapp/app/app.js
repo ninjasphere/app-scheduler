@@ -53,9 +53,21 @@ angular.module('schedulerApp', [
 				function(tasks) {
 					service.tasks = {}
 					angular.forEach(tasks.schedule, function(task) {
+
 						if (!task.tags || task.tags.indexOf("simple-ui") < 0) {
 							return;
 						}
+
+						if (task.window.after.rule == 'timestamp') {
+							var
+								now = new Date(),
+								ts = new Date(task.window.after.param)
+							if (! ts.getFullYear() || ts < now) {
+								// console.debug("skipping expired or invalid task")
+								return
+							}
+						}
+
 						if (task.description && task.description != '') {
 							service.tasks[task["id"]] = task
 						}
