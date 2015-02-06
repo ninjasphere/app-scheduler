@@ -31,6 +31,7 @@ $panelBorder: 1px solid rgba(63,68,81, 1);
   cursor: pointer;
   @include border-radius(0.5rem);
   @include transition(all 0.1s ease-in-out);
+  @include user-select(none);
 
   &.cancel {
     background-color: hsl(38,73%,47%);
