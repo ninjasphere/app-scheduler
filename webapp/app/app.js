@@ -200,18 +200,18 @@ angular.module('schedulerApp', [
 	}
 
 	$scope.selectedThings = {};
-	$scope.availableThings = {};
+	$scope.actionModels = {};
 
 	$scope.task = function() {
 		return db.tasks[$routeParams["id"]]
 	}
 
 	$scope.$watch('task()', function(task) {
-		// $scope.availableThings = {}
+		// $scope.actionModels = {}
 		angular.forEach(db.things, function(t) {
 			var m = $scope.thingToModel(t)
 			if (m) {
-				$scope.availableThings[t["id"]] = m
+				$scope.actionModels[t["id"]] = m
 				$scope.selected = t["id"]
 			}
 		})
@@ -244,7 +244,7 @@ angular.module('schedulerApp', [
 			var thing = $scope.actionToModel(action)
 			if (thing) {
 				$scope.selectedThings[thing.id] = thing
-				delete $scope.availableThings[thing.id]
+				delete $scope.actionModels[thing.id]
 			} else {
 				console.debug(action)
 			}
@@ -334,14 +334,14 @@ angular.module('schedulerApp', [
 
 	$scope.updateSelected = function() {
 		$scope.selected = null
-		angular.forEach($scope.availableThings, function(m) {
+		angular.forEach($scope.actionModels, function(m) {
 			$scope.selected = m.id
 		})
 	}
 	$scope.add = function() {
 		if ($scope.selected) {
-			$scope.selectedThings[$scope.selected] = $scope.availableThings[$scope.selected]
-			// delete $scope.availableThings[$scope.selected] // JM Not needed
+			$scope.selectedThings[$scope.selected] = $scope.actionModels[$scope.selected]
+			// delete $scope.actionModels[$scope.selected] // JM Not needed
 			$scope.updateSelected()
 		}
 
@@ -357,7 +357,7 @@ angular.module('schedulerApp', [
 		angular.forEach(tmp, function(id) {
 			var m = $scope.selectedThings[id]
 			delete $scope.selectedThings[id]
-			$scope.availableThings[id] = m
+			$scope.actionModels[id] = m
 		})
 		$scope.updateSelected()
 	}
