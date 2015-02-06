@@ -1,10 +1,10 @@
 <div ng-controller="TaskList">
-  <a href="#/create" class="button full">Schedule a new task [ + ]</a>
-  <h5>Scheduled Tasks</h5>
+  <a href="#/create" class="button full">schedule a new task [ + ]</a>
+  <h5>scheduled tasks</h5>
   <ul class="task-list">
   	<li ng-repeat="task in tasks" ng-click="">
       <span class="name">{{task.description}}</span>
-  		<a href="#/edit/{{task.id}}" class="edit">Edit</a>
+  		<a href="#/edit/{{task.id}}" class="edit">edit</a>
   	</li>
   </ul>
 </div>
