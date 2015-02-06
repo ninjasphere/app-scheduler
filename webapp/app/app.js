@@ -198,24 +198,22 @@ angular.module('schedulerApp', [
 			return null
 		}
 		result.room = room.name
+		result.selected = true
 
 		return result
 	}
 
-	$scope.selectedThings = {};
-	$scope.availableThings = {};
+	$scope.actionModels = {};
 
 	$scope.task = function() {
 		return db.tasks[$routeParams["id"]]
 	}
 
 	$scope.$watch('task()', function(task) {
-		// $scope.availableThings = {}
 		angular.forEach(db.things, function(t) {
 			var m = $scope.thingToModel(t)
 			if (m) {
-				$scope.availableThings[t["id"]] = m
-				$scope.selected = t["id"]
+				$scope.actionModels[t["id"]] = m
 			}
 		})
 
@@ -244,15 +242,13 @@ angular.module('schedulerApp', [
 		}
 
 		angular.forEach(task.open, function(action) {
-			var thing = $scope.actionToModel(action)
-			if (thing) {
-				$scope.selectedThings[thing.id] = thing
-				delete $scope.availableThings[thing.id]
+			var model = $scope.actionToModel(action)
+			if (model && $scope.actionModels[model.id]) {
+				$scope.actionModels[model.id] = model
 			} else {
-				console.debug(action)
+				console.debug("found an action for a thing that no longer exists: ", action)
 			}
 		})
-		$scope.updateSelected()
 	})
 
 	$scope.selected = null
@@ -279,14 +275,16 @@ angular.module('schedulerApp', [
 
 		var open = (function() {
 			var results = []
-			angular.forEach($scope.selectedThings, function(m) {
-				results.push(
-					{
-						"type": "thing-action",
-						"action": (m.on == "true" ? "turnOn" : "turnOff"),
-						"thingID": m.id
-					}
-				)
+			angular.forEach($scope.actionModels, function(m) {
+				if (m.selected) {
+					results.push(
+						{
+							"type": "thing-action",
+							"action": (m.on == "true" ? "turnOn" : "turnOff"),
+							"thingID": m.id
+						}
+					)
+				}
 			})
 			return results
 		}())
@@ -336,36 +334,6 @@ angular.module('schedulerApp', [
 			})
 	}
 
-	$scope.updateSelected = function() {
-		$scope.selected = null
-		angular.forEach($scope.availableThings, function(m) {
-			$scope.selected = m.id
-		})
-	}
-	$scope.add = function() {
-		if ($scope.selected) {
-			$scope.selectedThings[$scope.selected] = $scope.availableThings[$scope.selected]
-			// delete $scope.availableThings[$scope.selected] // JM Not needed
-			$scope.updateSelected()
-		}
-
-	}
-
-	$scope.remove = function() {
-		var tmp = []
-		angular.forEach($scope.selectedThings, function (m) {
-			if (m.selected) {
-				tmp.push(m.id)
-			}
-		})
-		angular.forEach(tmp, function(id) {
-			var m = $scope.selectedThings[id]
-			delete $scope.selectedThings[id]
-			$scope.availableThings[id] = m
-		})
-		$scope.updateSelected()
-	}
-
 	$scope.cancel = function() {
 		$location.path('/list')
 	}
@@ -381,26 +349,12 @@ angular.module('schedulerApp', [
 		}
 	});
 
-	$scope.toggleSelect = function(thing) {
-		if (thing.selected) {
-			// Remove it
-			delete $scope.selectedThings[thing.id];
-			thing.selected = false;
-		} else {
-			// Add it
-			$scope.selectedThings[thing.id] = thing;
-			thing.selected = true;
-		}
+	$scope.toggleSelect = function(model) {
+		model.selected = !model.selected
 	}
 
-	$scope.toggleActionState = function(thing) {
-		if (thing.on) {
-			// It's on, turn it off
-			thing.on = false;
-		} else {
-			// It's off, turn it on
-			thing.on = true;
-		}
+	$scope.toggleActionState = function(model) {
+		model.on = ! model.on
 	}
 }])
 .controller('TaskList', ['$scope', 'db', '$rootScope', function($scope, db, $rootScope) {
