@@ -53,6 +53,9 @@ angular.module('schedulerApp', [
 				function(tasks) {
 					service.tasks = {}
 					angular.forEach(tasks.schedule, function(task) {
+						if (!task.tags || task.tags.indexOf("simple-ui") < 0) {
+							return;
+						}
 						if (task.description && task.description != '') {
 							service.tasks[task["id"]] = task
 						}
@@ -271,6 +274,7 @@ angular.module('schedulerApp', [
 		var task = {
 			"id": $routeParams["id"],
 			"description": desc,
+			"tags": ["simple-ui"],
 			"open": open,
 			"close": [],
 			"window": {
