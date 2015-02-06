@@ -331,27 +331,6 @@ angular.module('schedulerApp', [
 			})
 	}
 
-	$scope.add = function() {
-		if ($scope.selected) {
-			$scope.selectedThings[$scope.selected] = $scope.actionModels[$scope.selected]
-		}
-
-	}
-
-	$scope.remove = function() {
-		var tmp = []
-		angular.forEach($scope.selectedThings, function (m) {
-			if (m.selected) {
-				tmp.push(m.id)
-			}
-		})
-		angular.forEach(tmp, function(id) {
-			var m = $scope.selectedThings[id]
-			delete $scope.selectedThings[id]
-			$scope.actionModels[id] = m
-		})
-	}
-
 	$scope.cancel = function() {
 		$location.path('/list')
 	}
