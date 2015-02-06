@@ -121,6 +121,9 @@ angular.module('schedulerApp', [
 }])
 .controller('TaskEdit', ['$scope', '$location', 'db', '$routeParams', function($scope, $location, db, $routeParams) {
 
+	$scope.actionModels = {};
+	$scope.isDescriptionFrozen = false
+
 	$scope.thingToModel = function(thing) {
 		var result = {}
 		result.id = thing.id
@@ -200,55 +203,9 @@ angular.module('schedulerApp', [
 		return result
 	}
 
-	$scope.actionModels = {};
-
 	$scope.task = function() {
 		return db.tasks[$routeParams["id"]]
 	}
-
-	$scope.$watch('task()', function(task) {
-		angular.forEach(db.things, function(t) {
-			var m = $scope.thingToModel(t)
-			if (m) {
-				$scope.actionModels[t["id"]] = m
-			}
-		})
-
-		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
-		$scope.description = '@ '+$scope.timeOfDay
-
-		if (!task) {
-			return
-		}
-
-		$scope.description = task.description
-
-		switch (task.window.after.rule) {
-		case "sunrise":
-		case "sunset":
-		case "dawn":
-		case "dusk":
-			$scope.timeOfDay = task.window.after.rule
-			break;
-		case "time-of-day":
-			$scope.timeOfDay = task.window.after.param
-			break;
-		default:
-			console.debug("can't edit rule of type: ", task.window.after.rule)
-			return
-		}
-
-		angular.forEach(task.open, function(action) {
-			var model = $scope.actionToModel(action)
-			if (model && $scope.actionModels[model.id]) {
-				$scope.actionModels[model.id] = model
-			} else {
-				console.debug("found an action for a thing that no longer exists: ", action)
-			}
-		})
-	})
-
-	$scope.selected = null
 
 	$scope.save = function() {
 		$scope.message = ""
@@ -334,16 +291,9 @@ angular.module('schedulerApp', [
 		$location.path('/list')
 	}
 
-	$scope.isDescriptionFrozen = false
 	$scope.freezeDescription = function() {
 		$scope.isDescriptionFrozen = true
 	}
-
-	$scope.$watch('timeOfDay', function() {
-		if (!$scope.isDescriptionFrozen) {
-			$scope.description = '@ '+$scope.timeOfDay
-		}
-	});
 
 	$scope.toggleSelect = function(model) {
 		model.selected = !model.selected
@@ -352,6 +302,55 @@ angular.module('schedulerApp', [
 	$scope.toggleActionState = function(model) {
 		model.on = ! model.on
 	}
+
+	$scope.$watch('task()', function(task) {
+		angular.forEach(db.things, function(t) {
+			var m = $scope.thingToModel(t)
+			if (m) {
+				$scope.actionModels[t["id"]] = m
+			}
+		})
+
+		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
+		$scope.description = '@ '+$scope.timeOfDay
+
+		if (!task) {
+			return
+		}
+
+		$scope.description = task.description
+
+		switch (task.window.after.rule) {
+		case "sunrise":
+		case "sunset":
+		case "dawn":
+		case "dusk":
+			$scope.timeOfDay = task.window.after.rule
+			break;
+		case "time-of-day":
+			$scope.timeOfDay = task.window.after.param
+			break;
+		default:
+			console.debug("can't edit rule of type: ", task.window.after.rule)
+			return
+		}
+
+		angular.forEach(task.open, function(action) {
+			var model = $scope.actionToModel(action)
+			if (model && $scope.actionModels[model.id]) {
+				$scope.actionModels[model.id] = model
+			} else {
+				console.debug("found an action for a thing that no longer exists: ", action)
+			}
+		})
+	})
+
+	$scope.$watch('timeOfDay', function() {
+		if (!$scope.isDescriptionFrozen) {
+			$scope.description = '@ '+$scope.timeOfDay
+		}
+	});
+
 }])
 .controller('TaskList', ['$scope', 'db', '$rootScope', function($scope, db, $rootScope) {
 	$scope.tasks = {}
