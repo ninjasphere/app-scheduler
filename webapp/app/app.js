@@ -363,6 +363,7 @@ angular.module('schedulerApp', [
 		$scope.repeatDaily = true
 
 		if (!task) {
+			// console.debug("new task", $scope)
 			return
 		}
 
@@ -402,6 +403,8 @@ angular.module('schedulerApp', [
 
 		// the description is frozen iff the generated description does not match the saved description
 		$scope.isDescriptionFrozen = ($scope.description != '') && ($scope.description != $scope.generatedDescription())
+
+		// console.debug("loaded task", $scope)
 
 	})
 
