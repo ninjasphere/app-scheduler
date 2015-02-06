@@ -207,12 +207,10 @@ angular.module('schedulerApp', [
 	}
 
 	$scope.$watch('task()', function(task) {
-		// $scope.actionModels = {}
 		angular.forEach(db.things, function(t) {
 			var m = $scope.thingToModel(t)
 			if (m) {
 				$scope.actionModels[t["id"]] = m
-				$scope.selected = t["id"]
 			}
 		})
 
