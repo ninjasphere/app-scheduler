@@ -345,6 +345,7 @@ angular.module('schedulerApp', [
 			}
 		})
 
+		$scope.isDescriptionFrozen = false
 		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
 		$scope.description = '@ '+$scope.timeOfDay
 		$scope.repeatDaily = true
@@ -353,6 +354,7 @@ angular.module('schedulerApp', [
 			return
 		}
 
+		$scope.isDescriptionFrozen = true
 		$scope.description = task.description
 
 		angular.forEach(task.open, function(action) {
@@ -386,11 +388,18 @@ angular.module('schedulerApp', [
 			return
 		}
 
+		// the description is frozen iff the generated description does not match the saved description
+		$scope.isDescriptionFrozen = ($scope.description != '') && ($scope.description != $scope.generatedDescription())
+
 	})
+
+	$scope.generatedDescription = function() {
+		return '@ '+$scope.timeOfDay
+	}
 
 	$scope.$watch('timeOfDay', function() {
 		if (!$scope.isDescriptionFrozen) {
-			$scope.description = '@ '+$scope.timeOfDay
+			$scope.description = $scope.generatedDescription()
 		}
 	});
 
