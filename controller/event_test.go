@@ -225,6 +225,7 @@ func TestThatTimeOfDayEventFiresAtMostOncePerDay(t *testing.T) {
 	e, _ := newEvent(beforeNowTimeOfDayModel, false)
 	waiter := e.waiter(clock.Now())
 	<-waiter
+	e.setLastFired(testTime)
 	mockClock.SetNow(futureTime)
 	newWaiter := e.waiter(clock.Now())
 	select {

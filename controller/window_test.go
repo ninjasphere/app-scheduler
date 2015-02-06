@@ -163,6 +163,13 @@ func Test20150205(t *testing.T) {
 		t.Fatalf("was %v, wanted %v", true, false)
 	}
 
+	if stub.after.hasEventOccurred(scheduledAt, scheduledAt) {
+		stub.after.setLastFired(scheduledAt)
+	}
+	if stub.before.hasEventOccurred(scheduledAt, scheduledAt) {
+		stub.before.setLastFired(scheduledAt)
+	}
+
 	wakeup := make(chan time.Time)
 
 	go func() {
