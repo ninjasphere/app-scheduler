@@ -238,6 +238,7 @@ angular.module('schedulerApp', [
 
 			if (!ts.getFullYear()) {
 				$scope.message = "enter a time of the form hh:mm:dd"
+				return
 			} else {
 				if (ts < now) {
 					ts.setDate(ts.getDate()+1)
