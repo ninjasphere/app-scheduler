@@ -28,7 +28,10 @@
           "id": "on-off",
           "protocol": "on-off",
           "deviceId": "77517b5561",
-          "lastState": null
+          "lastState":  {
+            "timestamp": 1423278247833,
+            "payload": false
+          }
         },
         {
           "topic": "$device/77517b5561/channel/batch",
@@ -436,7 +439,10 @@
           "id": "on-off",
           "protocol": "on-off",
           "deviceId": "1ec32363f1",
-          "lastState": null
+          "lastState":  {
+            "timestamp": 1423278247833,
+            "payload": false
+          }
         }
       ],
       "signatures": {
@@ -450,6 +456,24 @@
     "id": "94dc7d1a-aa67-11e4-803a-7c669d02a706",
     "type": "fan",
     "name": "Fan",
+    "onOffChannel": {
+          "topic": "$device/cffbe666c8/channel/1-6-in",
+          "schema": "http://schema.ninjablocks.com/protocol/on-off",
+          "supportedMethods": [
+            "set",
+            "toggle",
+            "turnOff",
+            "turnOn"
+          ],
+          "supportedEvents": [],
+          "id": "1-6-in",
+          "protocol": "on-off",
+          "deviceId": "cffbe666c8",
+          "lastState": {
+            "timestamp": 1423278247833,
+            "payload": true
+          }
+    },
     "device": {
       "topic": "$device/cffbe666c8",
       "schema": "http://schema.ninjablocks.com/service/device",

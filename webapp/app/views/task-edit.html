@@ -2,7 +2,7 @@
 <label>description</label>
 <div class="field"><input ng-model="description" ng-change="freezeDescription()"/></div>
 <label>time</label>
-<div class="field"><input ng-model="timeOfDay"/></div>
+<div class="field"><input ng-model="timeOfDay" placeholder="hh:mm"/></div>
 <label>choose things to action</label>
 <div>
 <div class="things">
@@ -19,7 +19,7 @@
   <div class="button" ng-class="{ selected: repeatDaily}" ng-click="setRepeatDaily(true)">daily</div>
 </div>
 <label>duration</label>
-<div class="field"><input ng-model="duration"/></div>
+<div class="field"><input ng-model="duration" placeholder="hh:mm:ss"/></div>
 <br/>
 
 <div>{{message}}</div>

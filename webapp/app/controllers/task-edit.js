@@ -22,7 +22,10 @@ angular.module('schedulerApp.controller.task-edit', [
 			return null
 		}
 		result.room = room.name
-		result.on = "true"
+
+		result.on = !(thing.onOffChannel
+			&& thing.onOffChannel.lastState
+			&& thing.onOffChannel.lastState.payload == true)
 		return result
 	}
 
@@ -62,10 +65,10 @@ angular.module('schedulerApp.controller.task-edit', [
 		var result = {}
 		switch (action["action"]) {
 		case "turnOn":
-			result.on = "true"
+			result.on = true
 			break
 		case "turnOff":
-			result.on = "false"
+			result.on = false
 			break
 		default:
 			console.debug("bad action ", action)
@@ -155,12 +158,12 @@ angular.module('schedulerApp.controller.task-edit', [
 				if (m.selected) {
 					var obj = {
 							"type": "thing-action",
-							"action": (m.on == "true" ? "turnOn" : "turnOff"),
+							"action": (m.on ? "turnOn" : "turnOff"),
 							"thingID": m.id
 						}
 					open.push(obj)
 					obj = angular.copy(obj)
-					obj.action = (m.on != "true" ? "turnOn" : "turnOff")
+					obj.action = (!m.on? "turnOn" : "turnOff")
 					close.push(obj)
 				}
 			})
