@@ -107,7 +107,7 @@ angular.module('schedulerApp.controller.task-edit', [
 	$scope.timestamp = function(ts) {
 		var
 			now = new Date(),
-			ts = new Date($scope.formatDate(now)+" "+(ts ? ts : $scope.timeOfDay))
+			ts = new Date($scope.formatDate(now).replace(/-/g, '/')+" "+(ts ? ts : $scope.timeOfDay))
 			if (ts.getFullYear() && ts < now) {
 				ts.setDate(ts.getDate()+1)
 			}
