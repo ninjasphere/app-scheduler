@@ -26,12 +26,12 @@ angular.module('schedulerApp.controller.task-edit', [
 		return result
 	}
 
-	$scope.formatTime = function (date) {
+	$scope.formatTime = function (date, ui) {
 	    var h = date.getHours();
 	    var m = date.getMinutes();
 	    var s = date.getSeconds();
 	    var pad = function(d) { return d <= 9 ? '0'+d : d }
-	    return ''+pad(h)+":"+pad(m)+":"+pad(s)
+	    return ''+pad(h)+":"+pad(m)+(s != 0 || !ui ?  ":"+pad(s) : "")
 	}
 
 	$scope.formatDate = function (date) {
