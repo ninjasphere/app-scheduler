@@ -291,12 +291,12 @@ angular.module('schedulerApp.controller.task-edit', [
 			$scope.timeOfDay = task.window.after.rule
 			break;
 		case "time-of-day":
-			$scope.timeOfDay = task.window.after.param
+			$scope.timeOfDay = $scope.formatTime($scope.timestamp(task.window.after.param), true)
 			break;
 		case "timestamp":
 			var ts = new Date(task.window.after.param)
 			if (ts.getFullYear()) {
-				$scope.timeOfDay = $scope.formatTime(ts)
+				$scope.timeOfDay = $scope.formatTime(ts, true)
 				$scope.repeatDaily = false
 			}
 			break;
