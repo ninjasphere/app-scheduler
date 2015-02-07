@@ -286,10 +286,23 @@ angular.module('schedulerApp.controller.task-edit', [
 	})
 
 	$scope.generatedDescription = function() {
-		return '@ '+$scope.timeOfDay
+		var
+			base = '@ '+$scope.timeOfDay,
+			ts = $scope.timestamp(),
+			now = new Date()
+
+		if (!$scope.repeatDaily && ts.getFullYear()) {
+			if ($scope.formatDate(now) == $scope.formatDate($scope.timestamp())) {
+				return base + ' today'
+			} else {
+				return base + ' tomorrow'
+			}
+		} else {
+			return base
+		}
 	}
 
-	$scope.$watch('timeOfDay', function() {
+	$scope.$watch('timeOfDay+repeatDaily', function() {
 		if (!$scope.isDescriptionFrozen) {
 			$scope.description = $scope.generatedDescription()
 		}
