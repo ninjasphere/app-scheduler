@@ -137,14 +137,7 @@ angular.module('schedulerApp', [
 }])
 .controller('TaskEdit', ['$scope', '$location', 'db', '$routeParams', function($scope, $location, db, $routeParams) {
 
-	$scope.actionModels = {
-		'asdf': {
-			id: 1,
-			selected: false,
-			on: false,
-			description: 'Bedroom light in my bedroom'
-		}
-	};
+	$scope.actionModels = {}
 	$scope.isDescriptionFrozen = false
 	$scope.repeatDaily = true
 
