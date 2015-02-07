@@ -77,7 +77,8 @@ angular.module('schedulerApp', [
 			)
 		},
 		service = {
-			things: { } ,
+			things: {
+			} ,
 			rooms: { } ,
 			tasks: { } ,
 			save: function(task) {
@@ -136,7 +137,14 @@ angular.module('schedulerApp', [
 }])
 .controller('TaskEdit', ['$scope', '$location', 'db', '$routeParams', function($scope, $location, db, $routeParams) {
 
-	$scope.actionModels = {};
+	$scope.actionModels = {
+		'asdf': {
+			id: 1,
+			selected: false,
+			on: false,
+			description: 'Bedroom light in my bedroom'
+		}
+	};
 	$scope.isDescriptionFrozen = false
 	$scope.repeatDaily = true
 
