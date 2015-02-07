@@ -104,10 +104,10 @@ angular.module('schedulerApp.controller.task-edit', [
 		return db.tasks[$routeParams["id"]]
 	}
 
-	$scope.timestamp = function() {
+	$scope.timestamp = function(ts) {
 		var
 			now = new Date(),
-			ts = new Date($scope.formatDate(now)+" "+$scope.timeOfDay)
+			ts = new Date($scope.formatDate(now)+" "+(ts ? ts : $scope.timeOfDay))
 			if (ts.getFullYear() && ts < now) {
 				ts.setDate(ts.getDate()+1)
 			}
