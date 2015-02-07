@@ -11,6 +11,8 @@ angular.module('schedulerApp.controller.task-edit', [
 	$scope.isDescriptionFrozen = false
 	$scope.repeatDaily = true
 
+	$scope.duration = ''
+
 	$scope.thingToModel = function(thing) {
 		var result = {}
 		result.id = thing.id
@@ -71,12 +73,12 @@ angular.module('schedulerApp.controller.task-edit', [
 		}
 
 		if (action.type != "thing-action") {
-			console.debug("bad type ", action.type)
+			console.debug("bad type ", action)
 			return null
 		}
 
 		if (!action.thingID) {
-			console.debug("missing thing id")
+			console.debug("missing thing id", action)
 			return null
 		}
 
@@ -145,28 +147,42 @@ angular.module('schedulerApp.controller.task-edit', [
 
 		var desc = (($scope.description == '') ? '@ '+$scope.timeOfDay : $scope.description )
 
-		var open = (function() {
-			var results = []
+		var actions = (function() {
+			var
+				open=[],
+				close=[]
 			angular.forEach($scope.actionModels, function(m) {
 				if (m.selected) {
-					results.push(
-						{
+					var obj = {
 							"type": "thing-action",
 							"action": (m.on == "true" ? "turnOn" : "turnOff"),
 							"thingID": m.id
 						}
-					)
+					open.push(obj)
+					obj = angular.copy(obj)
+					obj.action = (m.on != "true" ? "turnOn" : "turnOff")
+					close.push(obj)
 				}
 			})
-			return results
+			return [open,close]
 		}())
+
+		var
+			beforeParam
+
+		if ($scope.duration == '') {
+			beforeParam = "00:01:00"
+			actions[1] = []
+		} else {
+			beforeParam = $scope.duration
+		}
 
 		var task = {
 			"id": $routeParams["id"],
 			"description": desc,
 			"tags": ["simple-ui"],
-			"open": open,
-			"close": [],
+			"open": actions[0],
+			"close": actions[1],
 			"window": {
 				"after": {
 					"rule": rule,
@@ -174,7 +190,7 @@ angular.module('schedulerApp.controller.task-edit', [
 				},
 				"before": {
 					"rule": "delay",
-					"param": "00:01:00"
+					"param": beforeParam
 				}
 			}
 		}
@@ -255,6 +271,17 @@ angular.module('schedulerApp.controller.task-edit', [
 				console.debug("found an action for a thing that no longer exists: ", action)
 			}
 		})
+
+		if (!task.window || !task.window.before || task.window.before.rule != 'delay') {
+			console.debug("invalid before rule", task)
+			return
+		}
+
+		console.debug(task)
+		if (task.close && task.close.length != 0) {
+			$scope.duration = task.window.before.param
+		}
+
 
 		switch (task.window.after.rule) {
 		case "sunrise":
