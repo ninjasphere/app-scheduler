@@ -229,9 +229,13 @@ label {
       float: left;
       line-height: 40px;
       overflow: hidden;
-      text-overflow: ellipsis; }
+      text-overflow: ellipsis;
+      width: calc(100% - 160px);
+      white-space: nowrap; }
     .things .thing .action {
-      float: right;
+      position: absolute;
+      right: 0px;
+      top: 0px;
       line-height: 40px;
       margin-right: 0.5rem;
       width: 110px; }

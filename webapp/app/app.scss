@@ -113,10 +113,14 @@
       line-height: $thingHeight;
       overflow: hidden;
       text-overflow: ellipsis;
+      width: calc(100% - 160px);
+      white-space: nowrap;
     }
 
     .action {
-      float: right;
+      position: absolute;
+      right: 0px;
+      top: 0px;
       line-height: $thingHeight;
       margin-right: 0.5rem;
       width: 110px;
