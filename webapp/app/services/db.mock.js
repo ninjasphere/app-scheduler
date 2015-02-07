@@ -4,13 +4,13 @@
 angular.module('schedulerApp.db.mock', [
   'ngResource'
 ])
-.factory('dbMock', [ '$q', function($q) {
+.factory('dbMock', [ '$resource', '$q', function($resource, $q) {
 
 	var
 		counter = 0,
 		service = {
-			things: { },
-			rooms: { },
+			things: $resource("services/mocks/things.js").get(),
+			rooms:  $resource("services/mocks/rooms.js").get(),
 			tasks: { },
 			save: function(task) {
 				if (! task.id || task.id == '') {
