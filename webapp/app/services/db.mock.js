@@ -23,7 +23,7 @@ angular.module('schedulerApp.db.mock', [
 				return deferred.promise
 			},
 			delete: function(id) {
-				delete service.tasks[task.id]
+				delete service.tasks[id]
 				var deferred = $q.defer()
 				deferred.resolve(service)
 				return deferred.promise
