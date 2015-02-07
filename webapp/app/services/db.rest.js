@@ -24,6 +24,7 @@ angular.module('schedulerApp.db.rest', [
 							}
 							angular.forEach(thing.device.channels, function(channel) {
 								if (channel.supportedMethods && channel.supportedMethods.indexOf("turnOff") >= 0) {
+									thing.onOffChannel = channel
 									found = true
 								}
 							})
