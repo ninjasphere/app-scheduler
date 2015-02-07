@@ -126,16 +126,12 @@ angular.module('schedulerApp.controller.task-edit', [
 			break
 		default:
 			var
-				now = new Date(),
-				ts = new Date($scope.formatDate(now)+" "+$scope.timeOfDay)
+				ts = $scope.timestamp()
 
 			if (!ts.getFullYear()) {
 				$scope.message = "enter a time of the form hh:mm:dd"
 				return
 			} else {
-				if (ts < now) {
-					ts.setDate(ts.getDate()+1)
-				}
 				if ($scope.repeatDaily) {
 					rule = "time-of-day"
 					param = $scope.formatTime(ts)
