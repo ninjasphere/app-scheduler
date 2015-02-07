@@ -60,7 +60,7 @@ angular.module('schedulerApp.db.rest', [
 						if (task.window.after.rule == 'timestamp') {
 							var
 								now = new Date(),
-								ts = new Date(task.window.after.param)
+								ts = new Date(task.window.after.param.replace(/-/g, "/"))
 							if (! ts.getFullYear() || ts < now) {
 								// console.debug("skipping expired or invalid task")
 								return
