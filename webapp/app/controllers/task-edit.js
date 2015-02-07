@@ -22,6 +22,10 @@ angular.module('schedulerApp.controller.task-edit', [
 			return null
 		}
 		result.room = room.name
+
+		result.on = !(thing.onOffChannel
+			&& thing.onOffChannel.lastState
+			&& thing.onOffChannel.lastState.payload == true)
 		return result
 	}
 
