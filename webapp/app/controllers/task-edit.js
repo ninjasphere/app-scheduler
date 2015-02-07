@@ -235,7 +235,7 @@ angular.module('schedulerApp.controller.task-edit', [
 		})
 
 		$scope.isDescriptionFrozen = false
-		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000)))
+		$scope.timeOfDay = $scope.formatTime(new Date(new Date().valueOf()+(60*1000))).substring(0,5)
 		$scope.description = '@ '+$scope.timeOfDay
 		$scope.repeatDaily = true
 
