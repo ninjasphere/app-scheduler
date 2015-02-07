@@ -1,2 +1,2 @@
-nservice -q app-scheduler stop || true
-nservice -q app-scheduler start || true
+/opt/ninjablocks/bin/nservice -q app-scheduler stop || true
+/opt/ninjablocks/bin/nservice -q app-scheduler start || true
