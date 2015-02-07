@@ -133,14 +133,14 @@ angular.module('schedulerApp.controller.task-edit', [
 			if (!ts.getFullYear()) {
 				$scope.message = "enter a time of the form hh:mm:dd"
 				return
+			}
+
+			if ($scope.repeatDaily) {
+				rule = "time-of-day"
+				param = $scope.formatTime(ts, false)
 			} else {
-				if ($scope.repeatDaily) {
-					rule = "time-of-day"
-					param = $scope.formatTime(ts)
-				} else {
-					rule = "timestamp"
-					param = $scope.formatDate(ts) + " " + $scope.formatTime(ts)
-				}
+				rule = "timestamp"
+				param = $scope.formatDate(ts) + " " + $scope.formatTime(ts, false)
 			}
 			break
 		}
