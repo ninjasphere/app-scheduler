@@ -9,8 +9,8 @@ angular.module('schedulerApp.db.mock', [
 	var
 		counter = 0,
 		service = {
-			things: $resource("services/mocks/things.js").get(),
 			rooms:  $resource("services/mocks/rooms.js").get(),
+			things: $resource("services/mocks/things.js").get(),
 			tasks: { },
 			save: function(task) {
 				if (! task.id || task.id == '') {
