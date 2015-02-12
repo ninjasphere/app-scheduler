@@ -87,7 +87,7 @@ angular.module('schedulerApp.controller.task-edit', [
 
 		result.id = action.subject
 		var parts = /(.*):(.*)/.exec(action.subject)
-		if parts.length < 3 {
+		if (parts.length < 3) {
 			console.debug("invalid subject id", action)
 			return null
 		}
