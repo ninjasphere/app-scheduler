@@ -22,14 +22,14 @@ func TestJSONRoundTrip(t *testing.T) {
 		Open: []*Action{
 			{
 				ActionType: "thing-action",
-				ThingID:    "thing-id",
+				SubjectID:  "thing:thing-id",
 				Action:     "on",
 			},
 		},
 		Close: []*Action{
 			{
 				ActionType: "thing-action",
-				ThingID:    "thing-id",
+				SubjectID:  "thing:thing-id",
 				Action:     "off",
 			},
 		},

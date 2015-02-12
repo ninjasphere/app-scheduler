@@ -15,7 +15,7 @@ angular.module('schedulerApp.controller.task-edit', [
 
 	$scope.thingToModel = function(thing) {
 		var result = {}
-		result.id = thing.id
+		result.id = "thing:"+thing.id
 		result.description = thing.name
 		var room = db.rooms[thing.location]
 		if (!room) {
@@ -80,15 +80,21 @@ angular.module('schedulerApp.controller.task-edit', [
 			return null
 		}
 
-		if (!action.thingID) {
+		if (!action.subject) {
 			console.debug("missing thing id", action)
 			return null
 		}
 
-		result.id = action.thingID
-		var thing = db.things[result.id]
+		result.id = action.subject
+		var parts = /(.*):(.*)/.exec(action.subject)
+		if parts.length < 3 {
+			console.debug("invalid subject id", action)
+			return null
+		}
+
+		var thing = db.things[parts[2]]
 		if (!thing) {
-			console.debug("invalid thing id", result.id)
+			console.debug("invalid thing id", parts[2])
 			return null
 		}
 		result.description = thing.name
@@ -159,7 +165,7 @@ angular.module('schedulerApp.controller.task-edit', [
 					var obj = {
 							"type": "thing-action",
 							"action": (m.on ? "turnOn" : "turnOff"),
-							"thingID": m.id
+							"subject": m.id
 						}
 					open.push(obj)
 					obj = angular.copy(obj)

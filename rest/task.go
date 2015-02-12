@@ -41,9 +41,10 @@ func (tr *TaskRouter) GetAllTasks(r *http.Request, w http.ResponseWriter) {
 }
 
 func (tr *TaskRouter) CreateTask(r *http.Request, w http.ResponseWriter) {
-	task := model.Task{}
-	json.NewDecoder(r.Body).Decode(&task)
-	if id, err := tr.scheduler.Schedule(&task); err != nil {
+	task := &model.Task{}
+	json.NewDecoder(r.Body).Decode(task)
+	task = task.Migrate()
+	if id, err := tr.scheduler.Schedule(task); err != nil {
 		w.WriteHeader(400)
 		w.Write([]byte(fmt.Sprintf("error: %v\n", err)))
 	} else {

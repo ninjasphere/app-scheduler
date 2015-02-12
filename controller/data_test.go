@@ -141,7 +141,7 @@ var (
 			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
-				ThingID:    "some-thing",
+				SubjectID:  "thing:some-thing",
 			},
 		},
 		Close: []*model.Action{},
@@ -153,7 +153,7 @@ var (
 			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
-				ThingID:    "some-thing",
+				SubjectID:  "thing:some-thing",
 			},
 		},
 		Close: []*model.Action{},
@@ -169,7 +169,7 @@ var (
 			{
 				ActionType: "thing-action",
 				Action:     "turnOn",
-				ThingID:    "some-thing",
+				SubjectID:  "thing:some-thing",
 			},
 		},
 		Close: []*model.Action{},

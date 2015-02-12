@@ -29,6 +29,9 @@ func (a *SchedulerApp) Start(m *model.Schedule) error {
 	if a.service != nil {
 		return fmt.Errorf("illegal state: scheduler is already running")
 	}
+	m = m.Migrate()
+	m.Version = Version
+	a.SendEvent("config", m)
 	a.service = &service.SchedulerService{
 		Log:   a.Log,
 		Conn:  a.Conn,

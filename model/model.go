@@ -7,6 +7,7 @@ type Action struct {
 	ActionType string `json:"type,omitempty"`
 	ThingID    string `json:"thingID,omitempty"`
 	Action     string `json:"action,omitempty"`
+	SubjectID  string `json:"subject,omitempty"`
 }
 
 // An Event specifies a point in time and is used to delimit the open
