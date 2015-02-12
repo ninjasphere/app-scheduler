@@ -18,8 +18,8 @@ const (
 type task struct {
 	model      *model.Task
 	window     *window
-	openers    []*action
-	closers    []*action
+	openers    []action
+	closers    []action
 	quit       chan struct{}
 	actuations chan actuationRequest
 	status     string
@@ -34,8 +34,8 @@ func (t *task) init(m *model.Task, actuations chan actuationRequest) error {
 	if err != nil {
 		return err
 	}
-	t.openers = make([]*action, 0, 0)
-	t.closers = make([]*action, 0, 0)
+	t.openers = make([]action, 0, 0)
+	t.closers = make([]action, 0, 0)
 	for _, a := range m.Open {
 		if actor, err := newAction(a); err == nil {
 			t.openers = append(t.openers, actor)
@@ -139,7 +139,7 @@ func (t *task) waitForCloseEvent(opened time.Time) bool {
 	}
 }
 
-func (t *task) doActions(phase string, actions []*action) {
+func (t *task) doActions(phase string, actions []action) {
 	reply := make(chan error)
 	for _, o := range actions {
 		t.actuations <- actuationRequest{
@@ -148,7 +148,7 @@ func (t *task) doActions(phase string, actions []*action) {
 		}
 		err := <-reply
 		if err != nil {
-			log.Errorf("The '%s' action during '%s' event for task '%s' failed with error: %s", o.model.Action, phase, t.model.ID, err)
+			log.Errorf("The '%s' action during '%s' event for task '%s' failed with error: %s", o.getModel().Action, phase, t.model.ID, err)
 		}
 	}
 }

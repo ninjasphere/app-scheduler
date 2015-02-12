@@ -23,7 +23,7 @@ type cancelRequest struct {
 }
 
 type actuationRequest struct {
-	action *action
+	action action
 	reply  chan error
 }
 

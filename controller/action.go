@@ -8,11 +8,24 @@ import (
 	"time"
 )
 
-type action struct {
+type action interface {
+	actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error
+	getModel() *model.Action
+}
+
+type baseAction struct {
 	model *model.Action
 }
 
-func (a *action) actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error {
+type thingAction struct {
+	baseAction
+}
+
+func (a *baseAction) getModel() *model.Action {
+	return a.model
+}
+
+func (a *thingAction) actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error {
 	// acquire the model
 	thing := &nmodel.Thing{}
 	if err := client.Call("fetch", a.model.GetThingID(), thing, timeout); err != nil {
@@ -65,8 +78,8 @@ func (a *action) actuate(conn *ninja.Connection, client *ninja.ServiceClient, ti
 	return nil
 }
 
-func newAction(m *model.Action) (*action, error) {
-	var a *action
+func newAction(m *model.Action) (action, error) {
+	var a action
 
 	switch m.ActionType {
 	case "thing-action":
@@ -76,8 +89,10 @@ func newAction(m *model.Action) (*action, error) {
 
 	switch m.Action {
 	case "turnOn", "turnOff", "toggle":
-		a = &action{
-			model: m,
+		a = &thingAction{
+			baseAction: baseAction{
+				model: m,
+			},
 		}
 	default:
 		return nil, fmt.Errorf("'%s' is an action which is not supported by the scheduler", m.Action)
