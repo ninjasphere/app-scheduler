@@ -11,3 +11,11 @@ func (m *Action) GetThingID() string {
 		return ""
 	}
 }
+
+func (m *Action) GetSceneID() string {
+	if x := strings.Index(m.SubjectID, "scene:"); x >= 0 {
+		return m.SubjectID[x+len("scene:"):]
+	} else {
+		return ""
+	}
+}
