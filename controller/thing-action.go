@@ -2,16 +2,18 @@ package controller
 
 import (
 	"fmt"
-	"github.com/ninjasphere/go-ninja/api"
 	"github.com/ninjasphere/go-ninja/model"
-	"time"
 )
 
 type thingAction struct {
 	baseAction
 }
 
-func (a *thingAction) actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error {
+func (a *thingAction) actuate(ctx *actuationContext) error {
+	conn := ctx.conn
+	client := ctx.thingClient
+	timeout := ctx.timeout
+
 	// acquire the model
 	thing := &model.Thing{}
 	if err := client.Call("fetch", a.model.GetThingID(), thing, timeout); err != nil {

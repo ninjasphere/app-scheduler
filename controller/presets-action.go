@@ -10,6 +10,6 @@ type presetsAction struct {
 	baseAction
 }
 
-func (a *presetsAction) actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error {
+func (a *presetsAction) actuate(ctx *actuationContext) error {
 	return fmt.Errorf("unimplemented function: presetsAction.actuate")
 }

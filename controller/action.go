@@ -7,8 +7,14 @@ import (
 	"time"
 )
 
+type actuationContext struct {
+	conn        *ninja.Connection
+	thingClient *ninja.ServiceClient
+	timeout     time.Duration
+}
+
 type action interface {
-	actuate(conn *ninja.Connection, client *ninja.ServiceClient, timeout time.Duration) error
+	actuate(ctx *actuationContext) error
 	getModel() *model.Action
 }
 

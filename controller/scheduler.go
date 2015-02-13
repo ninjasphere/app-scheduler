@@ -152,7 +152,7 @@ func (s *Scheduler) loop() {
 			cancelReq.reply <- err
 
 		case actuationReq := <-s.actuations:
-			err := actuationReq.action.actuate(s.conn, s.thingClient, s.timeout)
+			err := actuationReq.action.actuate(&actuationContext{conn: s.conn, thingClient: s.thingClient, timeout: s.timeout})
 			actuationReq.reply <- err
 
 		case statusReq := <-s.status:
