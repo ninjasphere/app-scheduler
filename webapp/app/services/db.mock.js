@@ -8,9 +8,11 @@ angular.module('schedulerApp.db.mock', [
 
 	var
 		counter = 0,
+		scenes = {},
 		service = {
 			rooms:  $resource("services/mocks/rooms.js").get(),
 			things: $resource("services/mocks/things.js").get(),
+			scenes: scenes,
 			tasks: { },
 			save: function(task) {
 				if (! task.id || task.id == '') {
@@ -34,5 +36,10 @@ angular.module('schedulerApp.db.mock', [
 				return deferred.promise
 			}
 		}
+	$resource("services/mocks/scenes.js").query({}, function(a){
+		angular.forEach(a, function(e) {
+			scenes[e.id] = e
+		})
+	})
 	return service
 }])

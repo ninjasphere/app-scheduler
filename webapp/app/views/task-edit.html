@@ -6,10 +6,10 @@
 <label>choose things to action</label>
 <div>
 <div class="things">
-	<div ng-repeat="thing in actionModels" class="thing" ng-class="{selected: thing.selected}">
-    <div class="selector"><input type="checkbox" ng-model="thing.selected"></div>
-    <span class="name" ng-click="toggleSelect(thing)">{{thing.description}} in {{thing.room}}</span>
-    <div class="action" ng-click="toggleActionState(thing)">Turn It <strong>{{ thing.on ? "On" : "Off" }}</strong></div>
+	<div ng-repeat="model in actionModels" class="thing" ng-class="{selected: model.selected}">
+    <div class="selector"><input type="checkbox" ng-model="model.selected"></div>
+    <span class="name" ng-click="toggleSelect(model)">{{model.description}} in {{model.room}}</span>
+    <div class="action" ng-click="toggleActionState(model)" action-label="model"></div>
 	</div>
 </div>
 </div>

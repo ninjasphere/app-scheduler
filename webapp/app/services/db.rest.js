@@ -10,6 +10,7 @@ angular.module('schedulerApp.db.rest', [
 		Things = $resource("http://"+$location.host()+":8000/rest/v1/things", {}),
 		Rooms = $resource("http://"+$location.host()+":8000/rest/v1/rooms", {}),
 		Tasks = $resource("http://"+$location.host()+":"+$location.port()+"/rest/v1/tasks", {}),
+		Scenes = $resource("http://"+$location.host()+":8101/rest/v1/presets", {}),
 		Task = $resource("http://"+$location.host()+":"+$location.port()+"/rest/v1/tasks/:id", {}),
 		refreshThings = function() {
 			return Things.get({}).$promise.then(
@@ -48,6 +49,16 @@ angular.module('schedulerApp.db.rest', [
 				}
 			)
 		},
+		refreshScenes = function() {
+			return Scenes.query({}).$promise.then(
+					function(scenes) {
+						service.scenes = {}
+						angular.forEach(scenes, function(scene) {
+							service.scenes[scene.id] = scene
+						})
+					}
+				)
+		},
 		refreshTasks = function() {
 			return Tasks.get({}).$promise.then(
 				function(tasks) {
@@ -80,6 +91,7 @@ angular.module('schedulerApp.db.rest', [
 			things: { } ,
 			rooms: { } ,
 			tasks: { } ,
+			scenes: { },
 			save: function(task) {
 				var deferred = $q.defer()
 				Tasks.save(
@@ -104,7 +116,7 @@ angular.module('schedulerApp.db.rest', [
 				return deferred.promise
 			},
 			refresh: function() {
-				return $q.all([ refreshRooms(),	refreshThings(), refreshTasks() ]).then(
+				return $q.all([ refreshRooms(),	refreshThings(), refreshScenes(), refreshTasks() ]).then(
 					function() {
 						return service
 					}

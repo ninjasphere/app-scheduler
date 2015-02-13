@@ -9,6 +9,26 @@ angular.module('schedulerApp.controller.task-edit', [
   $routeProvider.when('/edit/:id', {templateUrl: 'views/task-edit.html', controller: 'TaskEdit'});
   $routeProvider.when('/create', {templateUrl: 'views/task-edit.html', controller: 'TaskEdit'});
 }])
+.directive('actionLabel', [function() {
+	return {
+		'restrict': 'A',
+		'scope': {
+			"model": "=actionLabel"
+		},
+		'link': function(scope, elt, attr) {
+			scope.$watch("model.on", function() {
+				switch (scope.model.actionType) {
+				case "thing-action":
+					elt.html("turn it <strong>"+(scope.model.on?"on":"off")+"</strong>")
+					break
+				case "presets-action":
+					elt.html("<strong>apply</strong>")
+					break
+				}
+			})
+		}
+	}
+}])
 .controller('TaskEdit', ['$scope', '$location', 'db', '$routeParams', function($scope, $location, db, $routeParams) {
 
 	$scope.actionModels = {};
@@ -17,10 +37,16 @@ angular.module('schedulerApp.controller.task-edit', [
 
 	$scope.duration = ''
 
+	var model = function() {
+	}
+	model.prototype.actionLabel = function() {
+	}
+
 	$scope.thingToModel = function(thing) {
-		var result = {}
+		var result = new model()
 		result.id = "thing:"+thing.id
 		result.description = thing.name
+		result.actionType = 'thing-action'
 		var room = db.rooms[thing.location]
 		if (!room) {
 			return null
@@ -30,6 +56,36 @@ angular.module('schedulerApp.controller.task-edit', [
 		result.on = !(thing.onOffChannel
 			&& thing.onOffChannel.lastState
 			&& thing.onOffChannel.lastState.payload == true)
+		return result
+	}
+
+	$scope.sceneToModel = function(scene) {
+		var result = new model(),
+			location=''
+
+		result.id = "scene:"+scene.id
+		result.description = scene.label
+		result.actionType = 'presets-action'
+		var scopeParts = /(.*):(.*)/.exec(scene.scope)
+		if (scopeParts.length < 3) {
+			console.debug("invalid scope", action)
+			return null
+		}
+		if (scopeParts[1] != "site") {
+			location = scopeParts[2]
+		}
+
+		if (location != '') {
+			var room = db.rooms[location]
+			if (!room) {
+				return null
+			}
+			result.room = room.name
+		} else {
+			result.room = 'Home'
+		}
+
+		result.on =  true
 		return result
 	}
 
@@ -66,23 +122,8 @@ angular.module('schedulerApp.controller.task-edit', [
         // }
         //
 
-		var result = {}
-		switch (action["action"]) {
-		case "turnOn":
-			result.on = true
-			break
-		case "turnOff":
-			result.on = false
-			break
-		default:
-			console.debug("bad action ", action)
-			return null
-		}
-
-		if (action.type != "thing-action") {
-			console.debug("bad type ", action)
-			return null
-		}
+		var result = new model(),
+			location = ''
 
 		if (!action.subject) {
 			console.debug("missing thing id", action)
@@ -96,18 +137,82 @@ angular.module('schedulerApp.controller.task-edit', [
 			return null
 		}
 
-		var thing = db.things[parts[2]]
-		if (!thing) {
-			console.debug("invalid thing id", parts[2])
+
+		switch (action.type) {
+		case "thing-action":
+			switch (action["action"]) {
+			case "turnOn":
+				result.on = true
+				break
+			case "turnOff":
+				result.on = false
+				break
+			default:
+				console.debug("bad action ", action)
+				return null
+			}
+			if (parts[1] != 'thing') {
+				console.debug("thing-action with something other than a thing id", action)
+			}
+			var thing = db.things[parts[2]]
+			if (!thing) {
+				console.debug("invalid thing id", action)
+				return null
+			}
+			result.description = thing.name
+			location = thing.location
+			if (location == '') {
+				console.debug("invalid location", action)
+				return null
+			}
+			break;
+		case "presets-action":
+			switch (action["action"]) {
+			case "applyScene":
+				result.on = true
+				break
+			default:
+				console.debug("bad action ", action)
+				return null
+			}
+			if (parts[1] != 'scene') {
+				console.debug("presets-action with something other than a scene id", action)
+				return null
+			}
+			var scene = db.scenes[parts[2]]
+			if (!scene) {
+				console.debug("invalid scene id", action)
+				return null
+			}
+			result.description = scene.label
+			var scopeParts = /(.*):(.*)/.exec(scene.scope)
+			if (scopeParts.length < 3) {
+				console.debug("invalid scope", action)
+				return null
+			}
+			if (scopeParts[1] == "site") {
+				result.room = "Home"
+				location = ''
+			} else {
+				location = scopeParts[2]
+			}
+			break;
+		default:
+			console.debug("bad type ", action)
 			return null
 		}
-		result.description = thing.name
-		var room = db.rooms[thing.location]
-		if (!room) {
-			console.debug("invalid room id", thing.location)
-			return null
+
+		result.actionType = action.type
+
+		if (location != '') {
+			var room = db.rooms[location]
+			if (!room) {
+				console.debug("invalid room id", location)
+				return null
+			}
+			result.room = room.name
 		}
-		result.room = room.name
+
 		result.selected = true
 
 		return result
@@ -164,17 +269,37 @@ angular.module('schedulerApp.controller.task-edit', [
 			var
 				open=[],
 				close=[]
+
 			angular.forEach($scope.actionModels, function(m) {
 				if (m.selected) {
+
+					var openAction, closeAction
+
+					switch(m.actionType) {
+					case "thing-action":
+						openAction =  (m.on ? "turnOn" : "turnOff")
+						closeAction =  (!m.on ? "turnOn" : "turnOff")
+						break
+					case "presets-action":
+						openAction = "applyScene"
+						closeAction = ""
+						break
+					default:
+						console.debug("logic error: actionType not supported", m)
+						return
+					}
+
 					var obj = {
-							"type": "thing-action",
-							"action": (m.on ? "turnOn" : "turnOff"),
-							"subject": m.id
-						}
+						"type": m.actionType,
+						"action": openAction,
+						"subject": m.id
+					}
 					open.push(obj)
-					obj = angular.copy(obj)
-					obj.action = (!m.on? "turnOn" : "turnOff")
-					close.push(obj)
+					if (closeAction != '') {
+						obj = angular.copy(obj)
+						obj.action = closeAction
+						close.push(obj)
+					}
 				}
 			})
 			return [open,close]
@@ -259,7 +384,14 @@ angular.module('schedulerApp.controller.task-edit', [
 		angular.forEach(db.things, function(t) {
 			var m = $scope.thingToModel(t)
 			if (m) {
-				$scope.actionModels[t["id"]] = m
+				$scope.actionModels["thing:"+t["id"]] = m
+			}
+		})
+
+		angular.forEach(db.scenes, function(s) {
+			var m = $scope.sceneToModel(s)
+			if (m) {
+				$scope.actionModels["scene:"+s["id"]] = m
 			}
 		})
 
@@ -281,7 +413,7 @@ angular.module('schedulerApp.controller.task-edit', [
 			if (model && $scope.actionModels[model.id]) {
 				$scope.actionModels[model.id] = model
 			} else {
-				console.debug("found an action for a thing that no longer exists: ", action)
+				console.debug("found an action for a subject that no longer exists: ", action)
 			}
 		})
 
