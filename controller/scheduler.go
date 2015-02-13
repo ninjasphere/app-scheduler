@@ -125,6 +125,13 @@ func (s *Scheduler) loop() {
 					}
 				}()
 				log.Debugf("started %s", taskID)
+			} else {
+				if found, _ := s.findTaskModel(taskID); found >= 0 {
+					s.model.Tasks = append(s.model.Tasks[0:found], s.model.Tasks[found+1:]...)
+					s.dirty = true
+					log.Debugf("error while initializing task id (%s), task removed from model: %v", taskID, err)
+					err = nil
+				}
 			}
 			startReq.reply <- err
 
