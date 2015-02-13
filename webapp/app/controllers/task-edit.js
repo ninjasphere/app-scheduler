@@ -5,6 +5,10 @@ angular.module('schedulerApp.controller.task-edit', [
   'ngResource',
   'schedulerApp.db',
 ])
+.config(['$routeProvider', function($routeProvider) {
+  $routeProvider.when('/edit/:id', {templateUrl: 'views/task-edit.html', controller: 'TaskEdit'});
+  $routeProvider.when('/create', {templateUrl: 'views/task-edit.html', controller: 'TaskEdit'});
+}])
 .controller('TaskEdit', ['$scope', '$location', 'db', '$routeParams', function($scope, $location, db, $routeParams) {
 
 	$scope.actionModels = {};
