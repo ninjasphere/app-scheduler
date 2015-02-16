@@ -282,7 +282,7 @@ angular.module('schedulerApp.controller.task-edit', [
 						break
 					case "presets-action":
 						openAction = "applyScene"
-						closeAction = ""
+						closeAction = "undoScene"
 						break
 					default:
 						console.debug("logic error: actionType not supported", m)
@@ -295,11 +295,9 @@ angular.module('schedulerApp.controller.task-edit', [
 						"subject": m.id
 					}
 					open.push(obj)
-					if (closeAction != '') {
-						obj = angular.copy(obj)
-						obj.action = closeAction
-						close.push(obj)
-					}
+					obj = angular.copy(obj)
+					obj.action = closeAction
+					close.push(obj)
 				}
 			})
 			return [open,close]

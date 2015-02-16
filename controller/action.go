@@ -43,7 +43,7 @@ func newAction(m *model.Action) (action, error) {
 		}
 	case "presets-action":
 		switch m.Action {
-		case "applyScene":
+		case "applyScene", "undoScene":
 			a = &presetsAction{
 				baseAction: baseAction{
 					model: m,
