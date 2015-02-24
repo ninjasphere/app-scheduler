@@ -14,6 +14,32 @@ import (
 	nmodel "github.com/ninjasphere/go-ninja/model"
 )
 
+/*
+{"version":"0.1.2","timezone":"Australia/Sydney","location":{"latitude":-33.89354830683857,"longitude":151.1972676372228},
+
+
+
+"schedule":[
+
+	{
+		"id":"0be89fec-bbd5-11e4-8b2f-7c669d029ef0",
+		"tags":["simple-ui"],
+		"description":"@ 14:28",
+		"window": {
+			"after":{
+				"rule":"time-of-day",
+				"param":"14:28:00"
+			},
+			"before":{
+				"rule":"delay",
+				"param":"1:00:00"
+			}
+		},
+		"open":[
+			{
+			"type":"thing-action","action":"turnOn","subject":"thing:ae9cc3b4-bbbf-11e4-a5c0-7c669d029ef0"}],"close":[{"type":"thing-action","action":"turnOff","subject":"thing:ae9cc3b4-bbbf-11e4-a5c0-7c669d029ef0"}]}]}
+*/
+
 var log = logger.GetLogger("ui")
 
 type ConfigService struct {
@@ -21,7 +47,7 @@ type ConfigService struct {
 	thingModel *ninja.ServiceClient
 }
 
-func NewConfigService(scheduler *service.SchedulerService, conn ninja.Connection) *ConfigService {
+func NewConfigService(scheduler *service.SchedulerService, conn *ninja.Connection) *ConfigService {
 	service := &ConfigService{scheduler, conn.GetServiceClient("$home/services/ThingModel")}
 	return service
 }
@@ -112,7 +138,12 @@ func (c *ConfigService) Configure(request *nmodel.ConfigurationRequest) (*suit.C
 	case "":
 		return c.list()
 	case "new":
-		return c.edit(&model.Task{})
+		return c.edit(&model.Task{
+			Window: &model.Window{
+				After:  &model.Event{},
+				Before: &model.Event{},
+			},
+		})
 	case "edit":
 
 		var vals map[string]string
@@ -174,7 +205,7 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 
 	var turnOffOptions []suit.OptionGroupOption
 	for _, s := range onOffThings {
-		turnOnOptions = append(turnOffOptions, suit.OptionGroupOption{
+		turnOffOptions = append(turnOffOptions, suit.OptionGroupOption{
 			Title:    s.Name,
 			Value:    s.ID,
 			Selected: containsThingAction(task, "turnOff", s.ID),
@@ -209,9 +240,9 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 		})
 	}*/
 
-	title := "New Security Light"
+	title := "New Scheduled Task"
 	if task.ID != "" {
-		title = "Edit Security Light"
+		title = "Edit Scheduled Task"
 	}
 
 	screen := suit.ConfigurationScreen{
@@ -229,6 +260,7 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 						Placeholder: "My Task",
 						Value:       task.Description,
 					},
+					suit.Separator{},
 					suit.OptionGroup{
 						Name:    "turnOn",
 						Title:   "Turn on",
@@ -238,7 +270,40 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 						Name:    "turnOff",
 						Title:   "Turn off",
 						Options: turnOffOptions,
-					}, /*
+					},
+					suit.Separator{},
+					suit.InputTime{
+						Name:  "time",
+						Title: "At",
+						Value: task.Window.After.Param,
+					},
+					suit.InputText{
+						Title:     "For",
+						After:     "minutes",
+						Name:      "timeout",
+						InputType: "number",
+						Minimum:   i(0),
+						Value:     5,
+					},
+					suit.RadioGroup{
+						Name:  "repeat",
+						Title: "Repeat",
+						Value: "once",
+						Options: []suit.RadioGroupOption{
+							suit.RadioGroupOption{
+								Title:       "Once",
+								Value:       "once",
+								DisplayIcon: "bolt",
+							},
+							suit.RadioGroupOption{
+								Title:       "Daily",
+								Value:       "daily",
+								DisplayIcon: "repeat",
+							},
+						},
+					},
+
+					/*
 						suit.OptionGroup{
 							Name:           "lights",
 							Title:          "Turn on these lights",
@@ -295,7 +360,7 @@ func (c *ConfigService) getOnOffThings() ([]*nmodel.Thing, error) {
 
 	for _, thing := range things {
 		hasOnOff := len(thing.Device.GetChannelsByProtocol("on-off")) > 0
-		if hasOnOff {
+		if hasOnOff && thing.Promoted {
 			onOffThings = append(onOffThings, thing)
 		}
 	}

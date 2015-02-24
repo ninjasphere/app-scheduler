@@ -52,7 +52,7 @@ func (a *SchedulerApp) Start(m *model.Schedule) error {
 	a.restServer.Scheduler = a.service
 	go a.restServer.Start()
 
-	a.configService = ui.NewConfigService(a.service)
+	a.configService = ui.NewConfigService(a.service, a.Conn)
 	a.Conn.MustExportService(a.configService, "$app/"+a.GetModuleInfo().ID+"/configure", &nmodel.ServiceAnnouncement{
 		Schema: "/protocol/configuration",
 	})
