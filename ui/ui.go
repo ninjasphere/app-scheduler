@@ -92,7 +92,8 @@ func (c *ConfigService) list() (*suit.ConfigurationScreen, error) {
 	}
 
 	screen := suit.ConfigurationScreen{
-		Title: "Scheduler",
+		Title:       "Scheduler",
+		DisplayIcon: "clock-o",
 		Sections: []suit.Section{
 			suit.Section{
 				Contents: []suit.Typed{
@@ -246,7 +247,8 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 	}
 
 	screen := suit.ConfigurationScreen{
-		Title: title,
+		Title:       title,
+		DisplayIcon: "clock-o",
 		Sections: []suit.Section{
 			suit.Section{
 				Contents: []suit.Typed{
