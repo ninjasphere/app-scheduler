@@ -14,32 +14,6 @@ import (
 	nmodel "github.com/ninjasphere/go-ninja/model"
 )
 
-/*
-{"version":"0.1.2","timezone":"Australia/Sydney","location":{"latitude":-33.89354830683857,"longitude":151.1972676372228},
-
-
-
-"schedule":[
-
-	{
-		"id":"0be89fec-bbd5-11e4-8b2f-7c669d029ef0",
-		"tags":["simple-ui"],
-		"description":"@ 14:28",
-		"window": {
-			"after":{
-				"rule":"time-of-day",
-				"param":"14:28:00"
-			},
-			"before":{
-				"rule":"delay",
-				"param":"1:00:00"
-			}
-		},
-		"open":[
-			{
-			"type":"thing-action","action":"turnOn","subject":"thing:ae9cc3b4-bbbf-11e4-a5c0-7c669d029ef0"}],"close":[{"type":"thing-action","action":"turnOff","subject":"thing:ae9cc3b4-bbbf-11e4-a5c0-7c669d029ef0"}]}]}
-*/
-
 var log = logger.GetLogger("ui")
 
 type ConfigService struct {
@@ -213,34 +187,6 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 		})
 	}
 
-	/*var sensorOptions []suit.OptionGroupOption
-	sensors, err := getSensors()
-	if err != nil {
-		return c.error(fmt.Sprintf("Could not find sensors: %s", err))
-	}
-
-	for _, s := range sensors {
-		sensorOptions = append(sensorOptions, suit.OptionGroupOption{
-			Title:    s.Name,
-			Value:    s.ID,
-			Selected: contains(config.Sensors, s.ID),
-		})
-	}
-
-	var lightOptions []suit.OptionGroupOption
-	lights, err := getLights()
-	if err != nil {
-		return c.error(fmt.Sprintf("Could not find lights: %s", err))
-	}
-
-	for _, s := range lights {
-		lightOptions = append(lightOptions, suit.OptionGroupOption{
-			Title:    s.Name,
-			Value:    s.ID,
-			Selected: contains(config.Lights, s.ID),
-		})
-	}*/
-
 	title := "New Scheduled Task"
 	if task.ID != "" {
 		title = "Edit Scheduled Task"
@@ -304,30 +250,6 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 							},
 						},
 					},
-
-					/*
-						suit.OptionGroup{
-							Name:           "lights",
-							Title:          "Turn on these lights",
-							MinimumChoices: 1,
-							Options:        lightOptions,
-						},
-						suit.InputTimeRange{
-							Name:  "time",
-							Title: "When",
-							Value: suit.TimeRange{
-								From: config.Time.From,
-								To:   config.Time.To,
-							},
-						},
-						suit.InputText{
-							Title:     "Turn off again after",
-							After:     "minutes",
-							Name:      "timeout",
-							InputType: "number",
-							Minimum:   i(0),
-							Value:     config.Timeout,
-						},*/
 				},
 			},
 		},
