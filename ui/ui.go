@@ -254,8 +254,9 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 			},
 		},
 		Actions: []suit.Typed{
-			suit.CloseAction{
+			suit.ReplyAction{
 				Label: "Cancel",
+				Name:  "list",
 			},
 			suit.ReplyAction{
 				Label:        "Save",
