@@ -388,13 +388,14 @@ func (c *ConfigService) Configure(request *nmodel.ConfigurationRequest) (*suit.C
 		return c.list()
 	case "save":
 
-		task := &model.Task{}
-		err := json.Unmarshal(request.Data, task)
-
-		if err != nil {
+		form := &taskForm{}
+		if err := json.Unmarshal(request.Data, form); err != nil {
 			return nil, fmt.Errorf("Failed to unmarshal save task request %s: %s", request.Data, err)
 		}
-
+		task, err := toModelTask(form)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to transform form into task: %v", err)
+		}
 		task = task.Migrate()
 		if _, err := c.scheduler.Schedule(task); err != nil {
 			return nil, fmt.Errorf("Failed to save task %s: %s", request.Data, err)
@@ -407,6 +408,13 @@ func (c *ConfigService) Configure(request *nmodel.ConfigurationRequest) (*suit.C
 }
 
 func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error) {
+
+	var form *taskForm
+	var err error
+
+	if form, err = toTaskForm(task); err != nil {
+		return c.error(fmt.Sprintf("Could not load form from model %s", err))
+	}
 
 	onOffThings, err := c.getOnOffThings()
 
