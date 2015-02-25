@@ -299,10 +299,15 @@ func (c *ConfigService) list() (*suit.ConfigurationScreen, error) {
 	}
 
 	for _, t := range schedule.Tasks {
-		tasks = append(tasks, suit.ActionListOption{
-			Title: t.Description,
-			Value: t.ID,
-		})
+		if f, err := toTaskForm(t); err != nil {
+			log.Debugf("skipped task (%s) because it cannot be edited: %v", t.ID, err)
+			continue
+		} else {
+			tasks = append(tasks, suit.ActionListOption{
+				Title: f.Description,
+				Value: t.ID,
+			})
+		}
 	}
 
 	screen := suit.ConfigurationScreen{
