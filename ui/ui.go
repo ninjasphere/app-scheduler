@@ -26,6 +26,18 @@ func NewConfigService(scheduler *service.SchedulerService, conn *ninja.Connectio
 	return service
 }
 
+type taskForm struct {
+	ID                   string   `json:"id"`
+	Description          string   `json:"description"`
+	OriginalDescription  string   `json:"originalDescription"`
+	GeneratedDescription string   `json:"generatedDescription"`
+	TurnOn               []string `json:"turnOn"`
+	TurnOff              []string `json:"turnOff"`
+	Time                 string   `json:"time"`
+	Duration             string   `json:"duration"`
+	Repeat               string   `json:"repeat"`
+}
+
 func (c *ConfigService) error(message string) (*suit.ConfigurationScreen, error) {
 
 	return &suit.ConfigurationScreen{
