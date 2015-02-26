@@ -456,10 +456,11 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 		if !s.On {
 			title = title + " *"
 		}
+		selected := containsSubjectAction(task, "thing-action", "turnOn", "thing:"+s.ID)
 		turnOnOptions = append(turnOnOptions, suit.OptionGroupOption{
 			Title:    title,
-			Value:    s.ID,
-			Selected: containsThingAction(task, "turnOn", s.ID),
+			Value:    "thing:" + s.ID,
+			Selected: selected,
 		})
 	}
 
@@ -474,10 +475,11 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 		if s.On {
 			title = title + " *"
 		}
+		selected := containsSubjectAction(task, "thing-action", "turnOff", "thing:"+s.ID)
 		turnOffOptions = append(turnOffOptions, suit.OptionGroupOption{
 			Title:    title,
-			Value:    s.ID,
-			Selected: containsThingAction(task, "turnOff", s.ID),
+			Value:    "thing:" + s.ID,
+			Selected: selected,
 		})
 	}
 
@@ -641,9 +643,9 @@ func indexOf(s []string, m string) int {
 	return -1
 }
 
-func containsThingAction(task *model.Task, action, thingID string) bool {
+func containsSubjectAction(task *model.Task, actionType, action, subjectID string) bool {
 	for _, a := range task.Open {
-		if a.SubjectID == "thing:"+thingID && a.ActionType == "thing-action" && a.ActionType == action {
+		if a.SubjectID == subjectID && a.ActionType == actionType && a.Action == action {
 			return true
 		}
 	}
