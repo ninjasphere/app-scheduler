@@ -309,6 +309,15 @@ func i(i int) *int {
 	return &i
 }
 
+func indexOf(s []string, m string) int {
+	for i, e := range s {
+		if e == m {
+			return i
+		}
+	}
+	return -1
+}
+
 func containsThingAction(task *model.Task, action, thingID string) bool {
 	for _, a := range task.Open {
 		if a.SubjectID == "thing:"+thingID && a.ActionType == "thing-action" && a.ActionType == action {
