@@ -453,6 +453,9 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 				title = fmt.Sprintf("%s in %s", s.Name, room.Name)
 			}
 		}
+		if !s.On {
+			title = title + " *"
+		}
 		turnOnOptions = append(turnOnOptions, suit.OptionGroupOption{
 			Title:    title,
 			Value:    s.ID,
@@ -467,6 +470,9 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 			if room, ok := c.rooms[*s.Location]; ok {
 				title = fmt.Sprintf("%s in %s", s.Name, room.Name)
 			}
+		}
+		if s.On {
+			title = title + " *"
 		}
 		turnOffOptions = append(turnOffOptions, suit.OptionGroupOption{
 			Title:    title,
