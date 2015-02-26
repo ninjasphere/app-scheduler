@@ -19,10 +19,17 @@ var log = logger.GetLogger("ui")
 type ConfigService struct {
 	scheduler  *service.SchedulerService
 	thingModel *ninja.ServiceClient
+	roomModel  *ninja.ServiceClient
+	rooms      map[string]*nmodel.Room // refreshed on each request
 }
 
 func NewConfigService(scheduler *service.SchedulerService, conn *ninja.Connection) *ConfigService {
-	service := &ConfigService{scheduler, conn.GetServiceClient("$home/services/ThingModel")}
+	service := &ConfigService{
+		scheduler:  scheduler,
+		thingModel: conn.GetServiceClient("$home/services/ThingModel"),
+		roomModel:  conn.GetServiceClient("$home/services/RoomModel"),
+		rooms:      make(map[string]*nmodel.Room),
+	}
 	return service
 }
 
@@ -298,6 +305,8 @@ func (c *ConfigService) list() (*suit.ConfigurationScreen, error) {
 		return c.error(fmt.Sprintf("Could not fetch schedule: %s", err))
 	}
 
+	c.refreshRooms()
+
 	for _, t := range schedule.Tasks {
 		if f, err := toTaskForm(t); err != nil {
 			log.Debugf("skipped task (%s) because it cannot be edited: %v", t.ID, err)
@@ -412,6 +421,8 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 	var form *taskForm
 	var err error
 
+	c.refreshRooms()
+
 	if form, err = toTaskForm(task); err != nil {
 		return c.error(fmt.Sprintf("Could not load form from model %s", err))
 	}
@@ -424,8 +435,14 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 
 	var turnOnOptions []suit.OptionGroupOption
 	for _, s := range onOffThings {
+		title := s.Name
+		if s.Location != nil {
+			if room, ok := c.rooms[*s.Location]; ok {
+				title = fmt.Sprintf("%s in %s", s.Name, room.Name)
+			}
+		}
 		turnOnOptions = append(turnOnOptions, suit.OptionGroupOption{
-			Title:    s.Name,
+			Title:    title,
 			Value:    s.ID,
 			Selected: containsThingAction(task, "turnOn", s.ID),
 		})
@@ -433,8 +450,14 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 
 	var turnOffOptions []suit.OptionGroupOption
 	for _, s := range onOffThings {
+		title := s.Name
+		if s.Location != nil {
+			if room, ok := c.rooms[*s.Location]; ok {
+				title = fmt.Sprintf("%s in %s", s.Name, room.Name)
+			}
+		}
 		turnOffOptions = append(turnOffOptions, suit.OptionGroupOption{
-			Title:    s.Name,
+			Title:    title,
 			Value:    s.ID,
 			Selected: containsThingAction(task, "turnOff", s.ID),
 		})
@@ -558,6 +581,26 @@ func (c *ConfigService) getOnOffThings() ([]*thingModel, error) {
 	}
 
 	return onOffThings, nil
+}
+
+func (c *ConfigService) refreshRooms() error {
+
+	var rooms []*nmodel.Room
+
+	err := c.roomModel.Call("fetchAll", []interface{}{}, &rooms, time.Second*20)
+	//err = client.Call("fetch", "c7ac05e0-9999-4d93-bfe3-a0b4bb5e7e78", &thing)
+
+	if err != nil {
+		return fmt.Errorf("Failed to get rooms!: %s", err)
+	}
+
+	result := make(map[string]*nmodel.Room)
+	for _, r := range rooms {
+		result[r.ID] = r
+	}
+
+	c.rooms = result
+	return nil
 }
 
 func i(i int) *int {
