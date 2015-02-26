@@ -367,10 +367,22 @@ func (c *ConfigService) Configure(request *nmodel.ConfigurationRequest) (*suit.C
 	case "":
 		return c.list()
 	case "new":
+		next := time.Now()
+		if next.Second() > 15 {
+			// give the user at leaat 45 seconds to edit the task
+			next = next.Add(time.Minute)
+		}
+		next = next.Truncate(time.Minute)
 		return c.edit(&model.Task{
 			Window: &model.Window{
-				After:  &model.Event{},
-				Before: &model.Event{},
+				After: &model.Event{
+					Rule:  "time-of-day",
+					Param: next.Format("15:04:05"),
+				},
+				Before: &model.Event{
+					Rule:  "delay",
+					Param: "00:01:00",
+				},
 			},
 		})
 	case "edit":
