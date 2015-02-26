@@ -347,7 +347,7 @@ func (c *ConfigService) list() (*suit.ConfigurationScreen, error) {
 				Label: "Close",
 			},
 			suit.ReplyAction{
-				Label:        "New Scheduled Task",
+				Label:        "New Task",
 				Name:         "new",
 				DisplayClass: "success",
 				DisplayIcon:  "star",
@@ -476,13 +476,15 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 				Contents: []suit.Typed{
 					suit.InputHidden{
 						Name:  "id",
-						Value: task.ID,
+						Value: form.ID,
 					},
-					suit.InputText{
-						Name:        "description",
-						Before:      "Name",
-						Placeholder: "My Task",
-						Value:       task.Description,
+					suit.InputHidden{
+						Name:  "originalDescription",
+						Value: form.Description,
+					},
+					suit.InputHidden{
+						Name:  "generatedDescription",
+						Value: fmt.Sprintf("%v", form.GeneratedDescription),
 					},
 					suit.Separator{},
 					suit.OptionGroup{
@@ -496,23 +498,28 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 						Options: turnOffOptions,
 					},
 					suit.Separator{},
-					suit.InputTime{
-						Name:  "time",
-						Title: "At",
-						Value: task.Window.After.Param,
+					suit.InputText{
+						Name:        "time",
+						Title:       "At",
+						Placeholder: "hh:mm|dawn|sunrise|sunset|dusk",
+						Value:       form.Time,
 					},
 					suit.InputText{
-						Title:     "For",
-						After:     "minutes",
-						Name:      "timeout",
-						InputType: "number",
-						Minimum:   i(0),
-						Value:     5,
+						Title:       "Duration",
+						Name:        "duration",
+						Placeholder: "hh:mm:ss",
+						Value:       form.Duration,
+					},
+					suit.InputText{
+						Title:       "Name",
+						Name:        "description",
+						Placeholder: "My Task",
+						Value:       form.Description,
 					},
 					suit.RadioGroup{
 						Name:  "repeat",
 						Title: "Repeat",
-						Value: "once",
+						Value: form.Repeat,
 						Options: []suit.RadioGroupOption{
 							suit.RadioGroupOption{
 								Title:       "Once",
