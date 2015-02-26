@@ -95,6 +95,77 @@ func timeToTimestamp(hhmmss time.Time) time.Time {
 	return parsed
 }
 
+// transforms a task model into a task form
+func toTaskForm(m *model.Task) (*taskForm, error) {
+
+	if indexOf(m.Tags, "config-ui") == 0 && indexOf(m.Tags, "simple-ui") == 0 {
+		return nil, fmt.Errorf("missing a compatible tag")
+	}
+
+	f := &taskForm{
+		ID:          m.ID,
+		Description: m.Description,
+		TurnOn:      make([]string, 0),
+		TurnOff:     make([]string, 0),
+	}
+
+	switch m.Window.After.Rule {
+	case "time-of-day":
+		if parsed, err := time.Parse("15:04:05", m.Window.After.Param); err != nil {
+			return nil, fmt.Errorf("invalid window.after.param: %v", err)
+		} else {
+			if parsed.Second() == 0 {
+				f.Time = parsed.Format("15:04")
+			} else {
+				f.Time = parsed.Format("15:04:05")
+			}
+			f.Repeat = "daily"
+		}
+	case "timestamp":
+		if parsed, err := time.Parse("2006-01-02 15:04:05", m.Window.After.Param); err != nil {
+			return nil, fmt.Errorf("invalid window.after.param: %v", err)
+		} else {
+			if parsed.Second() == 0 {
+				f.Time = parsed.Format("15:04")
+			} else {
+				f.Time = parsed.Format("15:04:05")
+			}
+			f.Repeat = "once"
+		}
+	default:
+		return nil, fmt.Errorf("invalid after rule: %v", m.Window.After.Rule)
+	}
+
+	switch m.Window.Before.Rule {
+	case "delay":
+		if len(m.Close) > 0 {
+			if parsed, err := time.Parse("15:04:05", m.Window.Before.Param); err != nil {
+				return nil, fmt.Errorf("invalid window.before.param: %v", err)
+			} else {
+				f.Duration = parsed.Format("15:04:05")
+			}
+		} else {
+			f.Duration = ""
+		}
+	default:
+		return nil, fmt.Errorf("invalid before rule: %v", m.Window.Before.Rule)
+	}
+
+	f.GeneratedDescription = "false"
+	f.Description = m.Description
+
+	dbDesc := f.getDBDescription()
+	if m.Description == dbDesc {
+		f.GeneratedDescription = "true"
+		uiDesc := f.getUIDescription()
+		f.Description = uiDesc
+	}
+
+	f.OriginalDescription = f.Description
+
+	return f, nil
+}
+
 func (c *ConfigService) error(message string) (*suit.ConfigurationScreen, error) {
 
 	return &suit.ConfigurationScreen{
