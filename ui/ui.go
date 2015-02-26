@@ -45,6 +45,16 @@ type thingModel struct {
 	On       bool
 }
 
+// convert a time to the next local timestamp greater than the current time
+func timeToTimestamp(hhmmss time.Time) time.Time {
+	now := time.Now()
+	parsed, _ := time.ParseInLocation("2006-01-02 15:04:05", now.Format("2006-01-02")+" "+hhmmss.Format("15:04:05"), now.Location())
+	if parsed.Sub(now) < 0 {
+		parsed = parsed.AddDate(0, 0, 1)
+	}
+	return parsed
+}
+
 func (c *ConfigService) error(message string) (*suit.ConfigurationScreen, error) {
 
 	return &suit.ConfigurationScreen{
