@@ -38,6 +38,46 @@ type taskForm struct {
 	Repeat               string   `json:"repeat"`
 }
 
+func (f *taskForm) getDBDescription() string {
+	return "@ " + f.Time
+}
+
+func (f *taskForm) getUIDescription() string {
+
+	switch f.Time {
+	case "dawn", "sunrise", "dusk", "sunset":
+		if f.Repeat == "daily" {
+			return "@ " + f.Time + " every day"
+		} else {
+			return "@ " + f.Time
+		}
+	default:
+		if f.Repeat == "daily" {
+			return "@ " + f.Time + " every day"
+		} else {
+			if t, err := time.Parse("15:04", f.Time); err != nil {
+				return "@ " + f.Time
+			} else {
+				if f.Duration == "" {
+					t = timeToTimestamp(t.Add(time.Minute))
+				} else {
+					duration, _ := parseTime(f.Duration)
+					t = timeToTimestamp(t)
+					t = t.Add(time.Duration(duration.Hour()) * time.Hour)
+					t = t.Add(time.Duration(duration.Minute()) * time.Minute)
+					t = t.Add(time.Duration(duration.Second()) * time.Second)
+				}
+				if t.Format("2006-01-02") == time.Now().Format("2006-01-02") {
+					return "@ " + f.Time + " today"
+				} else {
+					return "@ " + f.Time + " tomorrow"
+				}
+			}
+		}
+	}
+
+}
+
 type thingModel struct {
 	ID       string
 	Name     string
