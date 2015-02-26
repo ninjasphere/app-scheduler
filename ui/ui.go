@@ -358,3 +358,15 @@ func containsThingAction(task *model.Task, action, thingID string) bool {
 
 	return false
 }
+
+func parseTime(in string) (time.Time, error) {
+	var (
+		parsed time.Time
+		err    error
+	)
+	parsed, err = time.Parse("15:04:05", in)
+	if err != nil {
+		parsed, err = time.Parse("15:04", in)
+	}
+	return parsed, err
+}
