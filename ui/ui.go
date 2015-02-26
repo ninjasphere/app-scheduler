@@ -38,6 +38,13 @@ type taskForm struct {
 	Repeat               string   `json:"repeat"`
 }
 
+type thingModel struct {
+	ID       string
+	Name     string
+	Location *string
+	On       bool
+}
+
 func (c *ConfigService) error(message string) (*suit.ConfigurationScreen, error) {
 
 	return &suit.ConfigurationScreen{
@@ -282,7 +289,7 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 	return &screen, nil
 }
 
-func (c *ConfigService) getOnOffThings() ([]*nmodel.Thing, error) {
+func (c *ConfigService) getOnOffThings() ([]*thingModel, error) {
 
 	var things []*nmodel.Thing
 
@@ -293,12 +300,26 @@ func (c *ConfigService) getOnOffThings() ([]*nmodel.Thing, error) {
 		return nil, fmt.Errorf("Failed to get things!: %s", err)
 	}
 
-	onOffThings := []*nmodel.Thing{}
+	onOffThings := []*thingModel{}
 
 	for _, thing := range things {
-		hasOnOff := len(thing.Device.GetChannelsByProtocol("on-off")) > 0
-		if hasOnOff && thing.Promoted {
-			onOffThings = append(onOffThings, thing)
+		if channels := thing.Device.GetChannelsByProtocol("on-off"); len(channels) > 0 && thing.Promoted {
+			on := false
+			ch := channels[0]
+			if ch.LastState != nil {
+				if state, ok := ch.LastState.(map[string]interface{}); ok {
+					if payload, ok := state["payload"]; ok {
+						on, _ = payload.(bool)
+					}
+				}
+			}
+			m := &thingModel{
+				ID:       thing.ID,
+				Location: thing.Location,
+				Name:     thing.Name,
+				On:       on,
+			}
+			onOffThings = append(onOffThings, m)
 		}
 	}
 
