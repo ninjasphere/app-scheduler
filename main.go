@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/app-scheduler/rest"
 	"github.com/ninjasphere/app-scheduler/service"
+	"github.com/ninjasphere/app-scheduler/ui"
 	"github.com/ninjasphere/go-ninja/api"
+	nmodel "github.com/ninjasphere/go-ninja/model"
 	"github.com/ninjasphere/go-ninja/support"
 )
 
@@ -20,8 +23,9 @@ type postConstructable interface {
 //SchedulerApp describes the scheduler application.
 type SchedulerApp struct {
 	support.AppSupport
-	service    *service.SchedulerService
-	restServer rest.RestServer
+	service       *service.SchedulerService
+	restServer    rest.RestServer
+	configService *ui.ConfigService
 }
 
 // Start is called after the ExportApp call is complete.
@@ -46,7 +50,12 @@ func (a *SchedulerApp) Start(m *model.Schedule) error {
 	}
 
 	a.restServer.Scheduler = a.service
-	a.restServer.Start()
+	go a.restServer.Start()
+
+	a.configService = ui.NewConfigService(a.service, a.Conn)
+	a.Conn.MustExportService(a.configService, "$app/"+a.GetModuleInfo().ID+"/configure", &nmodel.ServiceAnnouncement{
+		Schema: "/protocol/configuration",
+	})
 
 	return nil
 }
