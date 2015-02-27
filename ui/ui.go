@@ -3,15 +3,17 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
+	presets "github.com/ninjasphere/app-presets/model"
 	"github.com/ninjasphere/app-scheduler/model"
 	"github.com/ninjasphere/app-scheduler/service"
 	"github.com/ninjasphere/go-ninja/api"
+	"github.com/ninjasphere/go-ninja/config"
 	"github.com/ninjasphere/go-ninja/logger"
-	"github.com/ninjasphere/go-ninja/suit"
-
 	nmodel "github.com/ninjasphere/go-ninja/model"
+	"github.com/ninjasphere/go-ninja/suit"
 )
 
 var log = logger.GetLogger("ui")
@@ -20,15 +22,22 @@ type ConfigService struct {
 	scheduler  *service.SchedulerService
 	thingModel *ninja.ServiceClient
 	roomModel  *ninja.ServiceClient
+	siteModel  *ninja.ServiceClient
+	presets    *ninja.ServiceClient
 	rooms      map[string]*nmodel.Room // refreshed on each request
+	sites      map[string]*nmodel.Site // refreshed on each request
 }
 
 func NewConfigService(scheduler *service.SchedulerService, conn *ninja.Connection) *ConfigService {
+	siteID := config.MustString("siteId")
 	service := &ConfigService{
 		scheduler:  scheduler,
 		thingModel: conn.GetServiceClient("$home/services/ThingModel"),
 		roomModel:  conn.GetServiceClient("$home/services/RoomModel"),
+		siteModel:  conn.GetServiceClient("$home/services/SiteModel"),
+		presets:    conn.GetServiceClient(fmt.Sprintf("$site/%s/service/presets", siteID)),
 		rooms:      make(map[string]*nmodel.Room),
+		sites:      make(map[string]*nmodel.Site),
 	}
 	return service
 }
@@ -38,6 +47,7 @@ type taskForm struct {
 	Description          string   `json:"description"`
 	OriginalDescription  string   `json:"originalDescription"`
 	GeneratedDescription string   `json:"generatedDescription"`
+	Presets              []string `json:"presets"`
 	TurnOn               []string `json:"turnOn"`
 	TurnOff              []string `json:"turnOff"`
 	Time                 string   `json:"time"`
@@ -145,6 +155,21 @@ func toModelTask(f *taskForm) (*model.Task, error) {
 	openActions := []*model.Action{}
 	closeActions := []*model.Action{}
 
+	for _, a := range f.Presets {
+		o := &model.Action{
+			ActionType: "presets-action",
+			Action:     "applyScene",
+			SubjectID:  a,
+		}
+		c := &model.Action{
+			ActionType: "presets-action",
+			Action:     "undoScene",
+			SubjectID:  a,
+		}
+		openActions = append(openActions, o)
+		closeActions = append(closeActions, c)
+	}
+
 	for _, a := range f.TurnOn {
 		o := &model.Action{
 			ActionType: "thing-action",
@@ -212,6 +237,7 @@ func toTaskForm(m *model.Task) (*taskForm, error) {
 	f := &taskForm{
 		ID:          m.ID,
 		Description: m.Description,
+		Presets:     make([]string, 0),
 		TurnOn:      make([]string, 0),
 		TurnOff:     make([]string, 0),
 	}
@@ -434,6 +460,7 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 	var err error
 
 	c.refreshRooms()
+	c.refreshSites()
 
 	if form, err = toTaskForm(task); err != nil {
 		return c.error(fmt.Sprintf("Could not load form from model %s", err))
@@ -443,6 +470,40 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 
 	if err != nil {
 		return c.error(fmt.Sprintf("Could not fetch all things: %s", err))
+	}
+
+	var sceneOptions []suit.OptionGroupOption
+	allScenes, err := c.getAllScenes()
+	if err != nil {
+		log.Debugf("failed to fetch scenes")
+	}
+
+	for _, s := range allScenes {
+		title := s.Label
+		parts := strings.Split(s.Scope, ":")
+		if len(parts) != 2 {
+			log.Debugf("wrong number of parts: %s", s.Scope)
+			continue
+		}
+		switch parts[0] {
+		case "site":
+			if site, ok := c.sites[parts[1]]; ok {
+				title = fmt.Sprintf("%s in %s", s.Label, site.Name)
+			}
+		case "room":
+			if room, ok := c.rooms[parts[1]]; ok {
+				title = fmt.Sprintf("%s in %s", s.Label, room.Name)
+			}
+		default:
+			log.Debugf("wrong scope type: %s", s.Scope)
+			continue
+		}
+		selected := containsSubjectAction(task, "presets-action", "applyScene", "scene:"+s.ID)
+		sceneOptions = append(sceneOptions, suit.OptionGroupOption{
+			Title:    title,
+			Value:    "scene:" + s.ID,
+			Selected: selected,
+		})
 	}
 
 	var turnOnOptions []suit.OptionGroupOption
@@ -507,6 +568,11 @@ func (c *ConfigService) edit(task *model.Task) (*suit.ConfigurationScreen, error
 						Value: fmt.Sprintf("%v", form.GeneratedDescription),
 					},
 					suit.Separator{},
+					suit.OptionGroup{
+						Name:    "presets",
+						Title:   "Presets",
+						Options: sceneOptions,
+					},
 					suit.OptionGroup{
 						Name:    "turnOn",
 						Title:   "Turn on",
@@ -630,6 +696,26 @@ func (c *ConfigService) refreshRooms() error {
 	return nil
 }
 
+func (c *ConfigService) refreshSites() error {
+
+	var sites []*nmodel.Site
+
+	err := c.roomModel.Call("fetchAll", []interface{}{}, &sites, time.Second*20)
+	//err = client.Call("fetch", "c7ac05e0-9999-4d93-bfe3-a0b4bb5e7e78", &thing)
+
+	if err != nil {
+		return fmt.Errorf("Failed to get sites!: %s", err)
+	}
+
+	result := make(map[string]*nmodel.Site)
+	for _, s := range sites {
+		result[s.ID] = s
+	}
+
+	c.sites = result
+	return nil
+}
+
 func i(i int) *int {
 	return &i
 }
@@ -663,4 +749,16 @@ func parseTime(in string) (time.Time, error) {
 		parsed, err = time.Parse("15:04", in)
 	}
 	return parsed, err
+}
+
+func (c *ConfigService) getAllScenes() ([]*presets.Scene, error) {
+
+	var scenes []*presets.Scene
+
+	err := c.presets.Call("fetchScenes", []interface{}{}, &scenes, time.Second*20)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get presets!: %s", err)
+	}
+
+	return scenes, nil
 }
