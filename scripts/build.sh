@@ -15,6 +15,12 @@ GIT_COMMIT="$(git rev-parse HEAD)"
 GIT_DIRTY="$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)"
 VERSION="$(grep "const Version " version.go | sed -E 's/.*"(.+)"$/\1/' )"
 
+PRIVATE_PKG="
+	ninjasphere/go-ninja
+	ninjasphere/app-presets
+"
+
+
 # remove working build
 # rm -rf .gopath
 if [ ! -d ".gopath" ]; then
@@ -25,9 +31,11 @@ fi
 export GOPATH="$(pwd)/.gopath"
 
 # Clone our internal commons package
-if [ ! -d $GOPATH/src/github.com/ninjasphere/go-ninja ]; then
-	git clone git@github.com:ninjasphere/go-ninja.git $GOPATH/src/github.com/ninjasphere/go-ninja
-fi
+for p in $PRIVATE_PKG; do
+    if [ ! -d $GOPATH/src/github.com/$p ]; then
+		git clone git@github.com:${p}.git $GOPATH/src/github.com/$p
+    fi
+done
 
 # move the working path and build
 cd .gopath/src/github.com/${OWNER}/${PROJECT_NAME} &&
