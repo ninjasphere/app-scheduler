@@ -95,10 +95,110 @@ func timeToTimestamp(hhmmss time.Time) time.Time {
 	return parsed
 }
 
+// transforms a task form into a task model
+func toModelTask(f *taskForm) (*model.Task, error) {
+
+	after := &model.Event{}
+	before := &model.Event{}
+
+	if f.Duration == "" {
+		before.Rule = "delay"
+		before.Param = "00:01:00"
+	} else {
+		before.Rule = "delay"
+		parsed, err := parseTime(f.Duration)
+		if err != nil {
+			return nil, fmt.Errorf("Duration must be specified in the form hh:mm or hh:mm:ss")
+		}
+		before.Param = parsed.Format("15:04:05")
+	}
+
+	switch f.Time {
+	case "dawn", "dusk", "sunset", "sunrise":
+		f.Repeat = "daily"
+
+	default:
+		parsed, err := parseTime(f.Time)
+		if err != nil {
+			return nil, fmt.Errorf("At must be entered as hh:mm.")
+		}
+
+		switch f.Repeat {
+		case "once":
+			after.Rule = "timestamp"
+			after.Param = timeToTimestamp(parsed).Format("2006-01-02 15:04:05")
+		case "daily":
+			after.Rule = "time-of-day"
+			after.Param = parsed.Format("15:04:05")
+		default:
+			return nil, fmt.Errorf("repeat is not valid")
+		}
+	}
+
+	openActions := []*model.Action{}
+	closeActions := []*model.Action{}
+
+	for _, a := range f.TurnOn {
+		o := &model.Action{
+			ActionType: "thing-action",
+			Action:     "turnOn",
+			SubjectID:  a,
+		}
+		c := &model.Action{
+			ActionType: "thing-action",
+			Action:     "turnOff",
+			SubjectID:  a,
+		}
+		openActions = append(openActions, o)
+		closeActions = append(closeActions, c)
+	}
+
+	for _, a := range f.TurnOff {
+		o := &model.Action{
+			ActionType: "thing-action",
+			Action:     "turnOff",
+			SubjectID:  a,
+		}
+		c := &model.Action{
+			ActionType: "thing-action",
+			Action:     "turnOn",
+			SubjectID:  a,
+		}
+		openActions = append(openActions, o)
+		closeActions = append(closeActions, c)
+	}
+
+	if f.Duration == "" {
+		closeActions = []*model.Action{}
+	}
+
+	description := ""
+	generateable := (f.Description == f.OriginalDescription && f.GeneratedDescription == "true") || f.Description == ""
+	if generateable {
+		description = f.getDBDescription()
+	} else {
+		description = f.Description
+	}
+
+	return &model.Task{
+		ID:          f.ID,
+		Description: description,
+		Tags: []string{
+			"config-ui",
+		},
+		Open:  openActions,
+		Close: closeActions,
+		Window: &model.Window{
+			After:  after,
+			Before: before,
+		},
+	}, nil
+}
+
 // transforms a task model into a task form
 func toTaskForm(m *model.Task) (*taskForm, error) {
 
-	if indexOf(m.Tags, "config-ui") == 0 && indexOf(m.Tags, "simple-ui") == 0 {
+	if indexOf(m.Tags, "simple-ui") == 0 {
 		return nil, fmt.Errorf("missing a compatible tag")
 	}
 
