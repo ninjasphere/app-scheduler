@@ -1,7 +1,7 @@
 {
   "id": "com.ninjablocks.scheduler",
   "name": "app-scheduler",
-  "version": "0.1.2",
+  "version": "1.0.1",
   "description": "Ninja Sphere - Scheduler App",
   "main": "app-scheduler",
   "scripts": {
