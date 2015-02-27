@@ -59,6 +59,39 @@ func (f *taskForm) getDBDescription() string {
 	return "@ " + f.Time
 }
 
+func (f *taskForm) getDuration() (time.Duration, error) {
+	if f.Duration == "" {
+		return time.Minute, nil
+	} else {
+		if tmp, err := parseTime(f.Duration); err != nil {
+			return 0, fmt.Errorf("Duration must be specified as hh:mm or hh:mm:ss")
+		} else {
+			d := time.Duration(tmp.Hour()) * time.Hour
+			d += time.Duration(tmp.Minute()) * time.Minute
+			d += time.Duration(tmp.Second()) * time.Second
+			return d, nil
+		}
+	}
+}
+
+// answer the timestamp of the earliest window starting today or tomorrow which is not closed
+func (f *taskForm) getTimestamp() (time.Time, error) {
+	if t, err := parseTime(f.Time); err != nil {
+		return time.Now(), fmt.Errorf("At must be specified as hh:mm or hh:mm:ss")
+	} else {
+		if d, err := f.getDuration(); err != nil {
+			return time.Now(), err
+		} else {
+			now := time.Now()
+			abs, _ := time.ParseInLocation("2006-01-02 15:04:05", now.Format("2006-01-02")+" "+t.Format("15:04:05"), now.Location())
+			if abs.Add(d).Sub(time.Now()) < 0 {
+				abs = abs.AddDate(0, 0, 1)
+			}
+			return abs, nil
+		}
+	}
+}
+
 func (f *taskForm) getUIDescription() string {
 
 	switch f.Time {
@@ -72,18 +105,9 @@ func (f *taskForm) getUIDescription() string {
 		if f.Repeat == "daily" {
 			return "@ " + f.Time + " every day"
 		} else {
-			if t, err := time.Parse("15:04", f.Time); err != nil {
+			if t, err := f.getTimestamp(); err != nil {
 				return "@ " + f.Time
 			} else {
-				if f.Duration == "" {
-					t = timeToTimestamp(t.Add(time.Minute))
-				} else {
-					duration, _ := parseTime(f.Duration)
-					t = timeToTimestamp(t)
-					t = t.Add(time.Duration(duration.Hour()) * time.Hour)
-					t = t.Add(time.Duration(duration.Minute()) * time.Minute)
-					t = t.Add(time.Duration(duration.Second()) * time.Second)
-				}
 				if t.Format("2006-01-02") == time.Now().Format("2006-01-02") {
 					return "@ " + f.Time + " today"
 				} else {
@@ -100,16 +124,6 @@ type thingModel struct {
 	Name     string
 	Location *string
 	On       bool
-}
-
-// convert a time to the next local timestamp greater than the current time
-func timeToTimestamp(hhmmss time.Time) time.Time {
-	now := time.Now()
-	parsed, _ := time.ParseInLocation("2006-01-02 15:04:05", now.Format("2006-01-02")+" "+hhmmss.Format("15:04:05"), now.Location())
-	if parsed.Sub(now) < 0 {
-		parsed = parsed.AddDate(0, 0, 1)
-	}
-	return parsed
 }
 
 // transforms a task form into a task model
@@ -135,15 +149,15 @@ func toModelTask(f *taskForm) (*model.Task, error) {
 		f.Repeat = "daily"
 
 	default:
-		parsed, err := parseTime(f.Time)
+		parsed, err := f.getTimestamp()
 		if err != nil {
-			return nil, fmt.Errorf("At must be entered as hh:mm.")
+			return nil, err
 		}
 
 		switch f.Repeat {
 		case "once":
 			after.Rule = "timestamp"
-			after.Param = timeToTimestamp(parsed).Format("2006-01-02 15:04:05")
+			after.Param = parsed.Format("2006-01-02 15:04:05")
 		case "daily":
 			after.Rule = "time-of-day"
 			after.Param = parsed.Format("15:04:05")
