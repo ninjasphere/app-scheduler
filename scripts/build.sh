@@ -39,8 +39,7 @@ done
 
 # move the working path and build
 cd .gopath/src/github.com/${OWNER}/${PROJECT_NAME} &&
-go get -d -v ./... &&
-go build -ldflags "-X main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" -o ${BIN_NAME} && (
+go get -d -v ./... && (
 # building the master branch on ci
 if [ "$BUILDBOX_BRANCH" = "master" ]; then
 	go build -ldflags "-X main.BugsnagKey=${BUGSNAG_KEY}" -tags release -o ./bin/${BIN_NAME}
