@@ -231,7 +231,7 @@ func toModelTask(f *taskForm) (*model.Task, error) {
 		Description: description,
 		Tags: []string{
 			"config-ui",
-			"simple-ui"
+			"simple-ui",
 		},
 		Open:  openActions,
 		Close: closeActions,
