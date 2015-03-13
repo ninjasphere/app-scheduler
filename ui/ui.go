@@ -231,6 +231,7 @@ func toModelTask(f *taskForm) (*model.Task, error) {
 		Description: description,
 		Tags: []string{
 			"config-ui",
+			"simple-ui"
 		},
 		Open:  openActions,
 		Close: closeActions,
@@ -244,8 +245,8 @@ func toModelTask(f *taskForm) (*model.Task, error) {
 // transforms a task model into a task form
 func toTaskForm(m *model.Task) (*taskForm, error) {
 
-	if indexOf(m.Tags, "simple-ui") == 0 {
-		return nil, fmt.Errorf("missing a compatible tag")
+	if indexOf(m.Tags, "simple-ui") < 0 && indexOf(m.Tags, "config-ui") < 0 {
+		return nil, fmt.Errorf("missing a compatible tag: one of simple-ui or config-ui must be used.")
 	}
 
 	f := &taskForm{
