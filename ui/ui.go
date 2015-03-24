@@ -52,6 +52,15 @@ func NewConfigService(scheduler *service.SchedulerService, conn *ninja.Connectio
 	return service
 }
 
+func (c *ConfigService) GetActions(request *nmodel.ConfigurationRequest) (*[]suit.ReplyAction, error) {
+	return &[]suit.ReplyAction{
+		suit.ReplyAction{
+			Label:       "Scheduler",
+			DisplayIcon: "clock-o",
+		},
+	}, nil
+}
+
 func (c *ConfigService) error(message string) (*suit.ConfigurationScreen, error) {
 
 	return &suit.ConfigurationScreen{
