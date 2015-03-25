@@ -415,6 +415,10 @@ func (c *ConfigService) Configure(request *nmodel.ConfigurationRequest) (*suit.C
 		}
 		next = next.Truncate(time.Minute)
 		return c.edit(&model.Task{
+			Tags: []string{
+				"config-ui",
+				"simple-ui",
+			},
 			Window: &model.Window{
 				After: &model.Event{
 					Rule:  "time-of-day",
