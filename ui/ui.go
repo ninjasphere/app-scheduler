@@ -672,6 +672,19 @@ func (c *ConfigService) getOnOffThings() ([]*thingModel, error) {
 	onOffThings := []*thingModel{}
 
 	for _, thing := range things {
+		if thing.Device == nil {
+			// required to deal with a situation that arose in https://ninjablocks.desk.com/agent/case/29065
+			// whereby the thing model was returning a model of this form.
+			//
+			//{
+			//	“id”: “d6fd61fc-d2a0-11e4-93dd-d0ff5093db1f”,
+			//	“type”: “mobile”,
+			//	“name”: “SAMSUNG-SM-N910A”,
+			//	“promoted”: false
+			//}
+			continue
+		}
+
 		if channels := thing.Device.GetChannelsByProtocol("on-off"); len(channels) > 0 && thing.Promoted {
 			on := false
 			ch := channels[0]
