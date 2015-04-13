@@ -147,6 +147,8 @@ func toModelTask(f *taskForm) (*model.Task, error) {
 	switch f.Time {
 	case "dawn", "dusk", "sunset", "sunrise":
 		f.Repeat = "daily"
+		after.Rule = f.Time
+		after.Param = ""
 
 	default:
 		parsed, err := f.getTimestamp()
@@ -280,6 +282,9 @@ func toTaskForm(m *model.Task) (*taskForm, error) {
 			}
 			f.Repeat = "once"
 		}
+	case "dawn", "dusk", "sunset", "sunrise":
+		f.Time = m.Window.After.Rule
+		f.Repeat = "daily"
 	default:
 		return nil, fmt.Errorf("invalid after rule: %v", m.Window.After.Rule)
 	}
