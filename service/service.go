@@ -1,7 +1,7 @@
 package service
 
 import (
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid
 	"fmt"
 	"github.com/ninjasphere/app-scheduler/controller"
 	"github.com/ninjasphere/app-scheduler/model"
