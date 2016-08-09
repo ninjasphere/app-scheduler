@@ -25,7 +25,11 @@ vet:
 
 here: build qa
 
-build:
+build: run-godeps
 	go build -o bin/app-scheduler
 
+run-godeps:
+	GOOS= GOARCH= go get github.com/tools/godep
+	PATH=$(GOPATH)/bin:$(PATH) godep restore 
+	
 .PHONY: all	dist clean test
