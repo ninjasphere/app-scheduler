@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/pborman/uuid
 	"fmt"
 	"github.com/ninjasphere/app-scheduler/controller"
 	"github.com/ninjasphere/app-scheduler/model"
@@ -10,6 +9,7 @@ import (
 	"github.com/ninjasphere/go-ninja/logger"
 	nmodel "github.com/ninjasphere/go-ninja/model"
 	"github.com/ninjasphere/go-ninja/rpc"
+	"github.com/pborman/uuid"
 	"time"
 )
 
